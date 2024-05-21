@@ -9,38 +9,45 @@ import mariadb
 #   2. type (string): entity type (establishment, item)
 #   3. id (int): entity id
 #   4. is_recent (bool): if view_all() should return reviews not older than a month
-def view_all (cur, type, id, is_recent): 
+def view_allreviews (cur, type, id, is_recent): 
   if (is_recent):
     cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {type}_id = ? AND DATEDIFF(NOW(), date) <= 30", (id,)) 
   else:
     cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {type}_id = ?", (id,)) 
 
-  for (review_id, rating, date, establishment_id, item_id, user_id) in cur.fetchall():
-    # User name
-    cur.execute("SELECT username FROM user WHERE user_id = ?", (user_id,))
-    username = cur.fetchone()[0]
+  reviews = cur.fetchall()
+  if (len(reviews) == 0):
+      if (is_recent):
+        print(f"\nThere are no recent reviews for that food {type}!")
+      else:
+        print(f"\nThere are no reviews for that food {type}!")
+  else:
+    for (review_id, rating, date, establishment_id, item_id, user_id) in reviews:
+      # User name
+      cur.execute("SELECT username FROM user WHERE user_id = ?", (user_id,))
+      username = cur.fetchone()[0]
 
-    # Establishment name
-    cur.execute("SELECT establishment_name FROM food_establishment WHERE establishment_id = ?", (establishment_id,))
-    establishment_name = cur.fetchone()[0]
+      # Establishment name
+      cur.execute("SELECT establishment_name FROM food_establishment WHERE establishment_id = ?", (establishment_id,))
+      establishment_name = cur.fetchone()[0]
 
-    if (type == "item"):
-      #Food name
-      cur.execute("SELECT food_name FROM food_item WHERE item_id = ?", (item_id,))
-      food_name = cur.fetchone()[0]
-      print(f"\nReview ID: {review_id}")
-      print(f"User: {username}")
-      print(f"Rating: {rating}/5 \t Date: {date}")
-      print(f"Establishment: \t{establishment_name}")
-      print(f"Food Name: \t{food_name}")
-      print("\n======================================")
+      if (type == "item"):
+        #Food name
+        cur.execute("SELECT food_name FROM food_item WHERE item_id = ?", (item_id,))
+        food_name = cur.fetchone()[0]
+        print(f"\n[Review ID: {review_id}]")
+        print(f"User: {username}")
+        print(f"Rating: {rating}/5 \tDate: {date}")
+        print(f"Establishment: \t\"{establishment_name}\"")
+        print(f"Food Name: \t\"{food_name}\"")
+        print("\n======================================")
 
-    else:
-      print(f"\n[Review ID: {review_id}]")
-      print(f"User: {username}")
-      print(f"Rating: {rating}/5 \t Date: {date}")
-      print(f"Establishment: \t{establishment_name}")
-      print("\n======================================")
+      else:
+        print(f"\n[Review ID: {review_id}]")
+        print(f"User: {username}")
+        print(f"Rating: {rating}/5 \t Date: {date}")
+        print(f"Establishment: \t\"{establishment_name}\"")
+        print("\n======================================")
 
   return
 #################################
@@ -127,6 +134,6 @@ cur.execute('''
     );
 ''')
 
-print("huh")
-view_all(cur, "establishment", 3, False)
-view_all(cur, "item", 4, False)
+
+view_allreviews(cur, "establishment", 30, False)
+view_allreviews(cur, "item", 4, False)
