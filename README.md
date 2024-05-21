@@ -10,6 +10,7 @@ Table of Contents
 # Schemas
 1. User
     - `user_id` INT (50) NOT NULL,
+      - **primary key**
     - `email` VARCHAR (50) NOT NULL,
     - `username` VARCHAR (50) NOT NULL,
     - `login_credentials` VARCHAR (50) NOT NULL,
@@ -17,30 +18,33 @@ Table of Contents
     - `is_manager` BOOLEAN,
 3. Food Establishment
     - `establishment_id` INT (50) NOT NULL,
+      - **primary key**
     - `establishment_name` VARCHAR (50) NOT NULL,
     - `establishment_rating` INT (50) DEFAULT NULL,
     - `location` VARCHAR (50),
     - `manager_id` INT (50) NOT NULL,
-      - foreign key
+      - *foreign key*
 5. Food Item
     - `item_id` INT (50) NOT NULL,
+      - **primary key**
     - `food_name` VARCHAR (50) NOT NULL,
     - `price` INT (50) NOT NULL,
     - `type` VARCHAR (10) NOT NULL,
     - `establishment_id` INT (50) NOT NULL,
-      - foreign key
+      - *foreign key*
     - `manager_id` INT (50) NOT NULL,
-      - foreign key
+      - *foreign key*
 7. Food Review
     - `review_id` INT (50) NOT NULL,
+      - **primary key**
     - `rating` INT (1) NOT NULL,
     - `date` DATE NOT NULL,
     - `establishment_id` INT (50) NOT NULL,
-      - foreign key
+      - *foreign key*
     - `item_id` INT (50),
-      - foreign key
+      - *foreign key*
     - `user_id` INT (50) NOT NULL,
-      - foreign key
+      - *foreign key*
 
 # Tasks
 Misc
