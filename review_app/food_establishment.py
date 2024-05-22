@@ -1,41 +1,7 @@
 import mariadb
 
-def  get_estab(cursor, choice):
-    if choice == 1:
-        cursor.execute("SELECT * FROM food_establishment")
-    if choice == 2:
-        cursor.execute("Select * FROM food_establishment WHERE reviews>=4")
-    return cursor.fetchall()
-
-def view_estab(cursor, choice):
-    fEstab = get_estab(cursor, choice)
-    print("Food Establishments:")
-    if choice == 1:
-        for estab in fEstab:
-            print(f"Establishment ID: {estab[0]} \nEstablishment Name: {estab[1]} \nEstablishment Rating: {estab[3]} \nLocation: {estab[4]} \nManager ID: {estab[5]}\n")
-    elif choice == 2:
-        for estab in fEstab:
-            print(f"Establishment ID: {estab[0]} \nEstablishment Name: {estab[1]} \nEstablishment Rating: {estab[3]} \nLocation: {estab[4]} \nManager ID: {estab[5]}\n")
-
-def add_estab(cursor, estabId, estabName, loc, estabManagerId ):
-    cursor.execute('''
-        INSERT INTO food_establishment (establishment_id, establishment_name, establishment_rating, location, manager_id)        
-        VALUES (?, ?, ?, ?, ?)
-    ''', (estabId, estabName, None, loc, estabManagerId))
-
-# def edit_estab(cursor, newEstID, newEstName, nReview, nloc, newEstManagerId):
-#     cursor.execute('''
-
-#     ''', ())
-
-# def delete_estab(cursor, newEstID, newEstName, nReview, nloc, newEstManagerId):
-#     cursor.execute('''
-
-#     ''', ())
-
-
 # Initialize database/connection
-def main():
+def init():
     # Connect to MariaDB Platform
     conn_bool = True
     while conn_bool:
@@ -117,11 +83,61 @@ def main():
         `user` (`user_id`)
         );
     ''')
-    conn.commit()
+
+
+
+
+# def  get_estab(choice):
+#     if choice == 1:
+#         cur.execute("SELECT * FROM food_establishment")
+#     if choice == 2:
+#         cur.execute("Select * FROM food_establishment WHERE reviews>=4")
+#     return cur.fetchall()
+
+def view_estab(choice):
+    print("Food Establishments:")
+    if choice == 1:
+            cur.execute("SELECT * FROM food_establishment")
+    elif choice == 2:
+            cur.execute("Select * FROM food_establishment WHERE reviews >= 4")
+
+def add_estab(estabId, estabName, loc, estabManagerId ):
+    cur.execute('''
+        INSERT INTO food_establishment (establishment_id, establishment_name, establishment_rating, location, manager_id)        
+        VALUES (?, ?, ?, ?, ?)
+    ''', (estabId, estabName, None, loc, estabManagerId,))
+
+def edit_estab(id):
+    cur.execute('''
+       SELECT * FROM food_establishment WHERE establishment_id = ?     
+    ''', (id,))
+
+    item = cur.fetchone()
+    if item:
+        print(item)
+        new_estName = input("Insert new establishment name: ")
+        new_estRating = input("Insert new rating here: ")
+        new_loc = input("Insert new location here: ")
+
+        cur.execute("UPDATE food_establishment SET establishment_name = ?, establishment_rating = ?, location = ?", (new_estName), (new_estRating), (new_loc))
+    else:
+        print("Establishment not found.")
+    
+
+def delete_estab(id):
+    cur.execute('''
+        DELETE * FROM food_establishment WHERE establishment_id = ?
+    ''', (id,))
+
+def search_estab(id):
+    cur.execute('''
+        SELECT * FROM food establishment WHERE establishment_id =?
+    ''', (id,))
+
 ########################################################
 
 print("\nReview Information System")
-
+init()
 while True:
     print("====== Menu ======\n")
     print("1. View all food establishments\n")
@@ -131,24 +147,26 @@ while True:
     print("5. Delete a food establishment\n")
     print("6. Search a food establishment\n")
     print("7. Exit\n")
-    choice = input("\nEnter your choice: ")
+    choice = int(input("\nEnter your choice: "))
 
-    if choice == '1':
-        view_estab(cur, 1)
-    elif choice == '2':
-        view_estab(cur, 2)
-    elif choice == '3':
+    if choice == 1:
+        view_estab(1)
+    elif choice == 2:
+        view_estab(2)
+    elif choice == 3:
         estabId = input("\nInput desired Establishment ID: ")
         estabName = input("\nInput desired Establishment name: ")
         loc = input("\nInput Establishment Location: ")
         estabManagerId = input("\nInput Manager ID of Establishment: ")
-        add_estab(cur, estabId, estabName, loc, estabManagerId)
-    # elif choice == 4:
-    #     newEstID= input("\nInput New Establishment ID: ")
-    #     newEstName = input("\nInput New Establishment name: ")
-    #     nReview = input("\nInput New review: ")
-    #     nloc = input("\nInput New Establishment Location: ")
-    #     newEstManagerId = input("\nInput New Manager ID: ")
-    #     edit_estab(cur, newEstID, newEstName, nReview, nloc, newEstManagerId)
-    elif choice == '7':
+        add_estab(estabId, estabName, loc, estabManagerId)
+    elif choice == 4:
+        id = int(input("\nPlease enter the ID of the establishment you want to edit: "))
+        edit_estab(id)
+    elif choice == 5:
+        id = int(input("\nInsert the ID of the establishment to be deleted: "))
+        delete_estab(id)
+    elif choice == 6:
+        id = int(input("\nInsert the ID of the establishment to be searched: "))
+        search_estab(id)
+    elif choice == 7:
         break
