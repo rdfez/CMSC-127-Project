@@ -3,8 +3,60 @@ from main import init
 import os
 
 import mariadb
+
+# Update a review
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor
+def update_review (cur):
+    view_all_reviews(cur)
+    review_id = get_id("\nEnter the ID of review to be updated: ", "review", None, None, cur)
+
+    print(f"\nReview Info:")
+    view_a_review(cur, review_id)
+
+    while True:
+        print("\nUpdate: ")
+        print("\t[1] Rating")
+        print("\t[2] Food Establishment")
+        print("\t[3] Food Item")
+        print("\t[0] Cancel")
+        choice = get_input("\nEnter choice: ", "int", 0, 3, None, None)
+
+        # Rating 
+        if choice == 1:
+            attribute = "rating"
+            value = get_input("\nEnter new rating (from 1 to 5): ", "int", 1, 5, None, None)
+
+        # Establishment
+        elif choice == 2:
+            attribute = "establishment_id"
+            value = get_id("Enter new establishment ID: ", "establishment", None, None, cur)
+        
+        # Food
+        elif choice == 3:
+            attribute = "item_id"
+            value = get_id("Enter new food item ID: ", "item", "\nJust remove food item? (y/n) ", True, cur)
+
+        elif choice == 0:
+            break
+
+        else:
+            print("Invalid choice!\n")
+        
+        # Update chosen field
+        cur.execute(f"UPDATE food_review SET {attribute} = ? WHERE review_id = ?;", (value, review_id))
+        
+        # Update establishment ratings
+        cur.execute("UPDATE food_establishment e SET establishment_rating = (SELECT TRUNCATE(SUM(rating)/COUNT(rating),1) FROM food_review r WHERE r.establishment_id = e.establishment_id and item_id IS NULL);")
+      
+        print(f"\nUpdated Review Info:")
+        view_a_review(cur, review_id)
+
+        print(f"\nReview's {attribute} was successfully updated!")
+
+    return
             
-# Delete review
+# Delete a review
 # - Parameters:
 #   1. cursor (cursor): mariaDB cursor
 def delete_review (cur):
@@ -12,6 +64,9 @@ def delete_review (cur):
     view_all_reviews(cur)
     # Get review id from user input
     review_id = get_id("\nEnter the ID of the review to be deleted: ", "review", None, None, cur)
+    
+    # Update establishment ratings
+    cur.execute("UPDATE food_establishment e SET establishment_rating = (SELECT TRUNCATE(SUM(rating)/COUNT(rating),1) FROM food_review r WHERE r.establishment_id = e.establishment_id AND item_id IS NULL);")
     # Delete review
     cur.execute("DELETE FROM food_review WHERE review_id = ?", (review_id,))
     
@@ -153,7 +208,7 @@ def view_a_review (cur, id):
   cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE review_id = ?", (id,)) 
 
   # Fetch all results
-  review = cur.fetchone()[0]
+  review = cur
 
   # Print the review
   print("\n======================================")
@@ -275,4 +330,5 @@ cur.execute('''
 
 
 # delete_review(cur)
+update_review(cur)
 view_reviews(cur)
