@@ -6,7 +6,7 @@ from datetime import datetime
 #   2. t (string): entity type (user, establishment, item, review)
 #   3. id (int): entity id
 # - Returns 1 if entity exists, otherwise 0
-def validator (cur, t, id):
+def validate_id (cur, t, id):
   if t == "user":
     cur.execute("SELECT user_id FROM user WHERE user_id = ?", (id,))
     for user_id in cur:
@@ -29,7 +29,7 @@ def validator (cur, t, id):
 
   return 0
 
-# Get total number of given entity in DB
+# Get total number of given entity
 # - Parameters:
 #   1. cursor (cursor): mariaDB cursor
 #   2. t (string): entity type (user, establishment, item, review)
@@ -54,7 +54,10 @@ def count (cur, t, prompt):
 #   3. min (int): minimum value
 #   4. max (int): maximum value
 #   5. optional_msg (string): message prompt for optional attributes ('y/n' prompts)
-#   6. optional_rev (bool): False = return NULL if a 'no' input should disregard optional attribute, otherwise True if 'yes'
+#   6. optional_rev (bool): 
+#       - False if an 'n' (no) input should return None 
+#       -- (will not continue to ask for user input for given type), 
+#       - True if 'y' (yes) should return None
 def get_input (msg, type, min, max, optional_msg, optional_rev):
   # For optional attributes
   if optional_msg:
@@ -80,22 +83,10 @@ def get_input (msg, type, min, max, optional_msg, optional_rev):
     elif type == "date":
       date = input(msg)
       try:
-        valid_date = datetime.strptime(date, "%d-%m-%Y").date()
+        valid_date = datetime.strptime(date, "%Y-%m-%d").date()
         return valid_date
       except ValueError:
         print("Invalid date!")
-    
-    elif type == "month":
-      try:
-        month = int(input(msg))
-        if (month >= min and month <= max):
-          month = str(month).zfill(2)
-          return month
-        else:
-          print("Invalid input!")
-
-      except (ValueError, TypeError):
-        print("Invalid input!")
     
     elif type == "int":
       try:
@@ -120,7 +111,7 @@ def get_input (msg, type, min, max, optional_msg, optional_rev):
 
       except (ValueError, TypeError):
         print("Invalid input!")
-
+        
 # Get entity id from user input
 # - Parameters:
 #   1. msg (string): message prompt for input
@@ -142,10 +133,21 @@ def get_id(msg, type, optional_msg, optional_rev, cur):
       return None
 
   while True:
-    if type == "establishment":
+    if type == "user":
+      try:
+        user_input = int(input(msg))
+        if validate_id(cur, "user", user_input) == 1:
+          return user_input
+        else:
+          print("User doesn't exist.")
+
+      except (ValueError, TypeError):
+        print("Invalid input!")
+
+    elif type == "establishment":
       try:
         establishment_input = int(input(msg))
-        if validator(cur, "establishment", establishment_input) == 1:
+        if validate_id(cur, "establishment", establishment_input) == 1:
           return establishment_input
         else:
           print("Establishment doesn't exist.")
@@ -156,7 +158,7 @@ def get_id(msg, type, optional_msg, optional_rev, cur):
     elif type == "item":
       try:
         item_input = int(input(msg))
-        if validator(cur, "item", item_input) == 1:
+        if validate_id(cur, "item", item_input) == 1:
           return item_input
         else:
           print("item doesn't exist.")
@@ -167,7 +169,7 @@ def get_id(msg, type, optional_msg, optional_rev, cur):
     elif type == "review":
       try:
         review_input = int(input(msg))
-        if validator(cur, "review", review_input) == 1:
+        if validate_id(cur, "review", review_input) == 1:
           return review_input
         else:
           print("Review doesn't exist.")
