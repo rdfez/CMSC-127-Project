@@ -238,7 +238,7 @@ def view_reviews (cur):
     return
 
   # Add menu
-  print('''\nPlease select one you would like to create a review for:
+  print('''\nPlease select one you would like to view the reviews for:
           [1] Food Establishment
           [2] Food Item
           [0] Cancel
