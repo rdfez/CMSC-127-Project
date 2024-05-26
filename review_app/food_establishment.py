@@ -76,8 +76,8 @@ def view_estab(choice):
     elif choice == 2:
         cur.execute("SELECT * FROM food_establishment WHERE establishment_rating >= 4")
     
-    results = cur.fetchall()  # Fetch all results
-    print(f"Number of establishments found: {len(results)}")  # Debugging statement
+    results = cur.fetchall()
+    print(f"Number of establishments found: {len(results)}")
     
     if results:
         for row in results:
@@ -85,11 +85,15 @@ def view_estab(choice):
     else:
         print("No establishments found for the given criteria.")
 
-def add_estab(estabName, loc, estabManagerId):
-    cur.execute('''
-        INSERT INTO food_establishment (establishment_name, establishment_rating, location, manager_id)        
-        VALUES (?, ?, ?, ?)
-    ''', (estabName, None, loc, estabManagerId))
+def add_estab(estabId, estabName, loc, estabManagerId):
+    try:
+        cur.execute('''
+            INSERT INTO food_establishment (establishment_id, establishment_name, establishment_rating, location, manager_id)        
+            VALUES (?, ?, ?, ?, ?)
+        ''', (estabId, estabName, None, loc, estabManagerId))
+        print("Establishment added successfully.")
+    except mariadb.Error as e:
+        print(f"Error: {e}")
 
 def edit_estab(id):
     cur.execute('''
@@ -106,6 +110,7 @@ def edit_estab(id):
             SET establishment_name = ?, establishment_rating = ?, location = ?
             WHERE establishment_id = ?
         ''', (new_estName, new_estRating, new_loc, id))
+        print("Establishment updated successfully.")
     else:
         print("Establishment not found.")
 
@@ -113,13 +118,17 @@ def delete_estab(id):
     cur.execute('''
         DELETE FROM food_establishment WHERE establishment_id = ?
     ''', (id,))
+    print("Establishment deleted successfully.")
 
 def search_estab(id):
     cur.execute('''
         SELECT * FROM food_establishment WHERE establishment_id = ?
     ''', (id,))
     result = cur.fetchone()
-    print(result)
+    if result:
+        print(result)
+    else:
+        print("Establishment not found.")
 
 def main():
     print("\nReview Information System")
@@ -140,21 +149,36 @@ def main():
         elif choice == 2:
             view_estab(2)
         elif choice == 3:
-            estabName = input("\nInput desired Establishment name: ")
-            loc = input("\nInput Establishment Location: ")
-            estabManagerId = input("\nInput Manager ID of Establishment: ")
-            add_estab(estabName, loc, estabManagerId)
+            try:
+                estabId = int(input("\nInput Establishment ID: "))
+                estabName = input("\nInput desired Establishment name: ")
+                loc = input("\nInput Establishment Location: ")
+                estabManagerId = int(input("\nInput Manager ID of Establishment: "))
+                add_estab(estabId, estabName, loc, estabManagerId)
+            except ValueError:
+                print("Invalid input. Please enter valid data.")
         elif choice == 4:
-            id = int(input("\nPlease enter the ID of the establishment you want to edit: "))
-            edit_estab(id)
+            try:
+                id = int(input("\nPlease enter the ID of the establishment you want to edit: "))
+                edit_estab(id)
+            except ValueError:
+                print("Invalid input. Please enter a valid ID.")
         elif choice == 5:
-            id = int(input("\nInsert the ID of the establishment to be deleted: "))
-            delete_estab(id)
+            try:
+                id = int(input("\nInsert the ID of the establishment to be deleted: "))
+                delete_estab(id)
+            except ValueError:
+                print("Invalid input. Please enter a valid ID.")
         elif choice == 6:
-            id = int(input("\nInsert the ID of the establishment to be searched: "))
-            search_estab(id)
+            try:
+                id = int(input("\nInsert the ID of the establishment to be searched: "))
+                search_estab(id)
+            except ValueError:
+                print("Invalid input. Please enter a valid ID.")
         elif choice == 7:
             break
+        else:
+            print("Invalid choice. Please select a valid option.")
 
 if __name__ == "__main__":
     main()
