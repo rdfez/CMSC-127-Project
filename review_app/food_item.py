@@ -177,43 +177,47 @@ def searchItem(item_id):
 
 ########################################################
 
-print("\nReview Information System")
-init()
+# print("\nReview Information System")
+# init()
+global cur
 
-while True:
-    print("======= Menu =======")
-    print("[1] View all food items from a food establishment")
-    print("[2] Search item from any establishment")
-    print("[3] Add a food item")
-    print("[4] Update a food item")
-    print("[5] Delete a food item")
-    print("[6] Search a food item")
-    print("[0] Exit\n")
-    choice = input("Enter your choice: ")
+def item_menu(main_cur):
+  global cur
+  cur = main_cur
+  while True:
+      print("======= Menu =======")
+      print("[1] View all food items from a food establishment")
+      print("[2] Search item from any establishment")
+      print("[3] Add a food item")
+      print("[4] Update a food item")
+      print("[5] Delete a food item")
+      print("[6] Search a food item")
+      print("[0] Exit\n")
+      choice = input("Enter your choice: ")
 
-    if choice == '1':
-        establishment_id = int(input("Enter Establishment ID: "))
-        viewItems(establishment_id)
+      if choice == '1':
+          establishment_id = int(input("Enter Establishment ID: "))
+          viewItems(establishment_id)
 
-    elif choice == '2':
-        item_id = input("Enter Item ID: ")
-        searchItemEstablishment(item_id)
+      elif choice == '2':
+          item_id = input("Enter Item ID: ")
+          searchItemEstablishment(item_id)
 
-    elif choice == '3':
-        addItem()
+      elif choice == '3':
+          addItem()
 
-    elif choice == '4':
-        item_id = int(input("Enter Item ID: "))
-        updateItem(item_id)
+      elif choice == '4':
+          item_id = int(input("Enter Item ID: "))
+          updateItem(item_id)
 
-    elif choice == '5':
-        item_id = int(input("Enter Item ID: "))
-        deleteItem(item_id)
+      elif choice == '5':
+          item_id = int(input("Enter Item ID: "))
+          deleteItem(item_id)
 
-    elif choice == '6':
-        item_id = int(input("Enter Item ID: "))
-        searchItem(item_id)
+      elif choice == '6':
+          item_id = int(input("Enter Item ID: "))
+          searchItem(item_id)
 
-    elif choice == '0':
+      elif choice == '0':
 
-        break
+          break

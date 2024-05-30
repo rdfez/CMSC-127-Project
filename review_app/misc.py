@@ -1,4 +1,9 @@
 from datetime import datetime
+import os
+
+# Clear the terminal/command line
+def clear():
+  os.system('cls||clear')
 
 # Check if entity exists
 # - Parameters:

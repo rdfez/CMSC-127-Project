@@ -1,4 +1,11 @@
 import mariadb
+import os
+
+from food_establishment import estab_menu, get_estab, view_estab, add_estab
+from food_item import item_menu, viewItems, addItem, searchItem, searchItemEstablishment, deleteItem
+from food_review import review_menu, add_review, view_reviews, update_review, delete_review
+
+from misc import get_input, get_id, clear
 
 # Initialize database/connection
 def init():
@@ -88,3 +95,24 @@ def init():
 
 print("\nReview Information System")
 init()
+
+while True:
+  clear()
+  print("\n======= Main Menu ======\n")
+  print("[1] Food Establishments")
+  print("[2] Food Items")
+  print("[3] Reviews")
+  print("[0] Exit")
+  print("\n========================")
+  choice = get_input("\nEnter Choice: ", "int", 0, 3, None, None)
+
+  if choice == 1:
+    clear()
+    estab_menu(cur)
+  elif choice == 2:
+    clear()
+    item_menu(cur)
+  elif choice == 3:
+    clear()
+    review_menu(cur)
+  elif choice == 0: break

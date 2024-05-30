@@ -1,4 +1,5 @@
 import mariadb
+import os
 
 def  get_estab(cursor, choice):
     if choice == 1:
@@ -120,35 +121,39 @@ def main():
     conn.commit()
 ########################################################
 
-print("\nReview Information System")
+global cur
 
-while True:
-    print("====== Menu ======\n")
-    print("1. View all food establishments\n")
-    print("2. View Highest-rated Food establishments\n")
-    print("3. Add a food establishment\n")
-    print("4. Update a food establishment\n")
-    print("5. Delete a food establishment\n")
-    print("6. Search a food establishment\n")
-    print("7. Exit\n")
-    choice = input("\nEnter your choice: ")
+def estab_menu(main_cur):
+  global cur
+  cur = main_cur
+  while True:
+      os.system('cls||clear')
+      print("====== Menu ======\n")
+      print("1. View all food establishments\n")
+      print("2. View Highest-rated Food establishments\n")
+      print("3. Add a food establishment\n")
+      print("4. Update a food establishment\n")
+      print("5. Delete a food establishment\n")
+      print("6. Search a food establishment\n")
+      print("7. Exit\n")
+      choice = input("\nEnter your choice: ")
 
-    if choice == '1':
-        view_estab(cur, 1)
-    elif choice == '2':
-        view_estab(cur, 2)
-    elif choice == '3':
-        estabId = input("\nInput desired Establishment ID: ")
-        estabName = input("\nInput desired Establishment name: ")
-        loc = input("\nInput Establishment Location: ")
-        estabManagerId = input("\nInput Manager ID of Establishment: ")
-        add_estab(cur, estabId, estabName, loc, estabManagerId)
-    # elif choice == 4:
-    #     newEstID= input("\nInput New Establishment ID: ")
-    #     newEstName = input("\nInput New Establishment name: ")
-    #     nReview = input("\nInput New review: ")
-    #     nloc = input("\nInput New Establishment Location: ")
-    #     newEstManagerId = input("\nInput New Manager ID: ")
-    #     edit_estab(cur, newEstID, newEstName, nReview, nloc, newEstManagerId)
-    elif choice == '7':
-        break
+      if choice == '1':
+          view_estab(cur, 1)
+      elif choice == '2':
+          view_estab(cur, 2)
+      elif choice == '3':
+          estabId = input("\nInput desired Establishment ID: ")
+          estabName = input("\nInput desired Establishment name: ")
+          loc = input("\nInput Establishment Location: ")
+          estabManagerId = input("\nInput Manager ID of Establishment: ")
+          add_estab(cur, estabId, estabName, loc, estabManagerId)
+      # elif choice == 4:
+      #     newEstID= input("\nInput New Establishment ID: ")
+      #     newEstName = input("\nInput New Establishment name: ")
+      #     nReview = input("\nInput New review: ")
+      #     nloc = input("\nInput New Establishment Location: ")
+      #     newEstManagerId = input("\nInput New Manager ID: ")
+      #     edit_estab(cur, newEstID, newEstName, nReview, nloc, newEstManagerId)
+      elif choice == '7':
+          break
