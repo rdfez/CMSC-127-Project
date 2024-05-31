@@ -30,17 +30,15 @@ def formatItem(item):
 
 def viewItems():
 
-    item_id = input("Enter Item ID: ")
+    establishment_id = input("Enter Establishment ID: ")
 
-    
-
-    filter = input("Enter Filter[MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]: ")
+    food_type = input("Enter Filter[MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]: ")
     sort = input("Enter Sort Price[DESC/ASC]: ")
 
     if filter == 'NA':
         cur.execute("SELECT * FROM food_item WHERE establishment_id = ? ORDER BY price "+ sort , (establishment_id,))
     else:
-        cur.execute("SELECT * FROM food_item WHERE establishment_id = ? type = ? ORDER BY price "+ sort, (establishment_id, filter))
+        cur.execute("SELECT * FROM food_item WHERE establishment_id = ? AND type = ? ORDER BY price "+ sort, (establishment_id, food_type))
 
     items = cur.fetchall()
     
@@ -52,16 +50,30 @@ def viewItems():
         print("No food items found for this establishment.")
 
 
-def searchItemEstablishment(item_id):
-    price_min = int(input("Enter Price Range Minimum: "))
-    price_max = int(input("Enter Price Range Maximum: "))
-    food_type = input("Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+def searchItemEstablishment():
 
-    if filter == 'NA':
-        cur.execute("SELECT * FROM food_item WHERE item_id = ? AND price BETWEEN ? AND ?", (item_id, price_min, price_max))
-    else:
-        cur.execute("SELECT * FROM food_item WHERE item_id = ? AND type = ? AND price BETWEEN ? AND ?", (item_id, food_type, price_min, price_max))
+    print("\n==============================\n")
+    print("[1] Based on Price Range")
+    print("[2] Based on Food Type")
+    print("[3] Based on Price Range and Food Type")
+    
+    choice = int(input("\nEnter Filter Choice: "))
 
+    if choice == 1:
+        price_min = int(input("Enter Price Range Minimum: "))
+        price_max = int(input("Enter Price Range Maximum: "))
+        cur.execute("SELECT * FROM food_item WHERE price >= ? AND price <= ?", (price_min, price_max))
+
+    elif choice == 2:  
+        food_type = input("Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+        cur.execute("SELECT * FROM food_item WHERE type = ?", (food_type,))
+
+    elif choice == 3: 
+        price_min = int(input("Enter Price Range Minimum: "))
+        price_max = int(input("Enter Price Range Maximum: "))
+        food_type = input("Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+        cur.execute("SELECT * FROM food_item WHERE type = ? AND price >= ? AND price <= ?", (food_type, price_min, price_max))
+    
     items = cur.fetchall()
     
     if items:
@@ -83,7 +95,9 @@ def addItem():
     cur.execute("INSERT INTO food_item (item_id, food_name, price, type, establishment_id, manager_id) VALUES (?, ?, ?, ?, ?, ?)", (food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id))
 
 
-def updateItem(item_id):
+def updateItem():
+    item_id = int(input("\nEnter Item ID: "))
+
     cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
 
     item = cur.fetchone()
@@ -134,8 +148,7 @@ def item_menu(main_cur):
       choice = input("\nEnter your choice: ")
 
       if choice == '1':
-          establishment_id = int(input("Enter Establishment ID: "))
-          viewItems(establishment_id)
+          viewItems()
 
       elif choice == '2':
           searchItemEstablishment()
@@ -143,9 +156,8 @@ def item_menu(main_cur):
       elif choice == '3':
           addItem()
 
-      elif choice == '4':
-          item_id = int(input("Enter Item ID: "))
-          updateItem(item_id)
+      elif choice == '4':   
+          updateItem()
 
       elif choice == '5':
           
