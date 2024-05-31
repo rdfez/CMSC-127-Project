@@ -1,88 +1,5 @@
 import mariadb
 
-# Initialize database/connection
-def init():
-    # Connect to MariaDB Platform
-    conn_bool = True
-    while conn_bool:
-        mariadb_password = input("Enter password: ")
-
-        try:
-            conn = mariadb.connect(
-                user = "root",
-                password = mariadb_password,
-                host = "localhost",
-                autocommit = True
-            )
-
-            if(conn):
-                conn_bool = False
-
-        except mariadb.Error as e:
-            print(f"Error connecting to MariaDB Platform: {e}")
-
-    # Get Cursor for DB functions
-    global cur 
-    cur = conn.cursor()
-
-    # Create database/tables on initial boot and use app database
-    cur.execute("CREATE DATABASE IF NOT EXISTS `review_app`;")
-    cur.execute("USE `review_app`;")
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS `user` (
-            `user_id` INT (50) NOT NULL,
-            `email` VARCHAR (50) NOT NULL,
-            `username` VARCHAR (50) NOT NULL,
-            `login_credentials` VARCHAR (50) NOT NULL,
-            `is_customer` BOOLEAN,
-            `is_manager` BOOLEAN,
-            PRIMARY KEY (`user_id`)
-        );
-    ''')
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS `food_establishment` (
-            `establishment_id` INT (50) NOT NULL,
-            `establishment_name` VARCHAR (50) NOT NULL,
-            `establishment_rating` INT (1) DEFAULT NULL,
-            `location` VARCHAR (50),
-            `manager_id` INT (50) NOT NULL,
-            PRIMARY KEY (`establishment_id`),
-            CONSTRAINT `foodestablishment_managerid_fk` FOREIGN KEY (`manager_id`) REFERENCES
-        `user` (`user_id`)
-        );
-    ''')
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS `food_item` (
-            `item_id` INT (50) NOT NULL,
-            `food_name` VARCHAR (50) NOT NULL,
-            `price` INT (50) NOT NULL,
-            `type` VARCHAR (50) NOT NULL,
-            `establishment_id` INT (50) NOT NULL,
-            `manager_id` INT (50) NOT NULL,
-            PRIMARY KEY (`item_id`),
-            CONSTRAINT `fooditem_establishmentid_fk` FOREIGN KEY (`establishment_id`) REFERENCES
-        `food_establishment` (`establishment_id`),
-            CONSTRAINT `fooditem_managerid_fk` FOREIGN KEY (`manager_id`) REFERENCES
-        `user` (`user_id`)
-        );
-    ''')
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS `food_review` (
-            `review_id` INT (50) NOT NULL,
-            `rating` INT (1) NOT NULL,
-            `date` DATE NOT NULL,
-            `establishment_id` INT (50) NOT NULL,
-            `item_id` INT (50),
-            `user_id` INT (50) NOT NULL, 
-            PRIMARY KEY (`review_id`),
-            CONSTRAINT `foodreview_establishmentid_fk` FOREIGN KEY(`establishment_id`) REFERENCES
-        `food_establishment` (`establishment_id`),
-            CONSTRAINT `foodreview_itemid_fk` FOREIGN KEY (`item_id`) REFERENCES
-        `food_item` (`item_id`),
-            CONSTRAINT `foodreview_userid_fk` FOREIGN KEY (`user_id`) REFERENCES
-        `user` (`user_id`)
-        );
-    ''')
 ########################################################
 # Food Item
 # 1. View all food items from a food establishment
@@ -96,9 +13,27 @@ def init():
 # 3. Add a food item
 # 4. Update a food item
 # 5. Delete a food item
-# 6. Search a food item (?)
+# 6. Search a food item
 
-def viewItems(establishment_id):
+def formatItem(item):
+     return (
+        f"==============================\n"
+        f"Item ID: {item[0]}\n"
+        f"Food Name: {item[1]}\n"
+        f"Price: {item[2]}\n"
+        f"Type: {item[3]}\n"
+        f"Establishment ID: {item[4]}\n"
+        f"Manager ID: {item[5]}\n"
+        f"==============================\n"
+    )
+
+
+def viewItems():
+
+    item_id = input("Enter Item ID: ")
+
+    
+
     filter = input("Enter Filter[MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]: ")
     sort = input("Enter Sort Price[DESC/ASC]: ")
 
@@ -112,7 +47,7 @@ def viewItems(establishment_id):
     if items:
         print("Food Items:")
         for item in items:
-            print(item)
+            print(formatItem(item))
     else:
         print("No food items found for this establishment.")
 
@@ -132,7 +67,7 @@ def searchItemEstablishment(item_id):
     if items:
         print("Food Items:")
         for item in items:
-            print(item)
+            print(formatItem(item))
     else:
         print("No food items found for this establishment.")
 
@@ -153,7 +88,7 @@ def updateItem(item_id):
 
     item = cur.fetchone()
     if item:
-        print(item)
+        print(formatItem(item))
         new_name  = input("Updated Name: ")
         new_price  = int(input("Updated Price: "))
         new_type = input("Updated Type: ")
@@ -163,7 +98,11 @@ def updateItem(item_id):
         print("Food item not found.")
     
 
-def deleteItem(item_id):
+def deleteItem():
+    cur.execute("SELECT * FROM food_item")
+
+    item_id = int(input("Enter Item ID: "))
+
     cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
 
 
@@ -171,37 +110,35 @@ def searchItem(item_id):
     cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
     item = cur.fetchone()
     if item:
-        print(item)
+        print(formatItem(item))
     else:
         print("Food item not found.")
 
 ########################################################
 
-# print("\nReview Information System")
-# init()
 global cur
 
 def item_menu(main_cur):
   global cur
   cur = main_cur
   while True:
-      print("======= Menu =======")
+      print("\n========= Food Items =========\n")
       print("[1] View all food items from a food establishment")
       print("[2] Search item from any establishment")
       print("[3] Add a food item")
       print("[4] Update a food item")
       print("[5] Delete a food item")
       print("[6] Search a food item")
-      print("[0] Exit\n")
-      choice = input("Enter your choice: ")
+      print("[0] Back to Menu")
+      print("\n==============================")
+      choice = input("\nEnter your choice: ")
 
       if choice == '1':
           establishment_id = int(input("Enter Establishment ID: "))
           viewItems(establishment_id)
 
       elif choice == '2':
-          item_id = input("Enter Item ID: ")
-          searchItemEstablishment(item_id)
+          searchItemEstablishment()
 
       elif choice == '3':
           addItem()
@@ -211,8 +148,8 @@ def item_menu(main_cur):
           updateItem(item_id)
 
       elif choice == '5':
-          item_id = int(input("Enter Item ID: "))
-          deleteItem(item_id)
+          
+          deleteItem()
 
       elif choice == '6':
           item_id = int(input("Enter Item ID: "))

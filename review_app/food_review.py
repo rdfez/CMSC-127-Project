@@ -189,7 +189,7 @@ def view_all_reviews (cur):
   # Print all reviews
   else:
     # os.system('cls||clear')
-    print("\n======================================")
+    print("\n==============================")
     # Loop through results
     for (review_id, rating, date, establishment_id, item_id, user_id) in reviews:
       # User name
@@ -210,7 +210,7 @@ def view_all_reviews (cur):
         print(f"Rating: {rating}/5 \tDate: {date}")
         print(f"Establishment: \t\"{establishment_name}\"")
         print(f"Food Name: \t\"{food_name}\"")
-        print("\n======================================")
+        print("\n==============================")
         
       else:
         # Print w/o food
@@ -284,7 +284,7 @@ def view_reviews (cur):
   # Print all reviews
   else:
     # os.system('cls||clear')
-    print("\n======================================")
+    print("\n==============================")
     # Loop through results
     for (review_id, rating, date, establishment_id, item_id, user_id) in reviews:
       # User name
@@ -305,7 +305,7 @@ def view_reviews (cur):
         print(f"Rating: {rating}/5 \tDate: {date}")
         print(f"Establishment: \t\"{establishment_name}\"")
         print(f"Food Name: \t\"{food_name}\"")
-        print("\n======================================")
+        print("\n==============================")
         
       else:
         # Print w/o food
@@ -313,7 +313,7 @@ def view_reviews (cur):
         print(f"User: {username}")
         print(f"Rating: {rating}/5 \t Date: {date}")
         print(f"Establishment: \t\"{establishment_name}\"")
-        print("\n======================================")
+        print("\n==============================")
 
   return
 
@@ -328,7 +328,7 @@ def view_a_review (cur, id):
   review = cur
 
   # Print the review
-  print("\n======================================")
+  print("\n==============================")
   for (review_id, rating, date, establishment_id, item_id, user_id) in review:
     # User name
     cur.execute("SELECT username FROM user WHERE user_id = ?", (user_id,))
@@ -348,7 +348,7 @@ def view_a_review (cur, id):
       print(f"Rating: {rating}/5 \tDate: {date}")
       print(f"Establishment: \t\"{establishment_name}\"")
       print(f"Food Name: \t\"{food_name}\"")
-      print("\n======================================")
+      print("\n==============================")
       
     else:
       # Print w/o food
@@ -356,7 +356,7 @@ def view_a_review (cur, id):
       print(f"User: {username}")
       print(f"Rating: {rating}/5 \t Date: {date}")
       print(f"Establishment: \t\"{establishment_name}\"")
-      print("\n======================================")
+      print("\n==============================")
 
     
   return
@@ -365,13 +365,13 @@ def view_a_review (cur, id):
 def review_menu(cur): 
 
   while True:
-    print(f"\n----------Reviews----------")
+    print("\n========== Reviews ==========\n")
     print("[1] View Reviews for a Food Establishment or Item")
     print("[2] Add a Review")
     print("[3] Edit a Review")
-    print("[4] Dekete a Review")
+    print("[4] Delete a Review")
     print("[0] Back to Menu")
-    print("-----------------------")
+    print("\n==============================")
     choice = get_input("\nEnter your choice: ", "int", 0, 4, None, None)
 
     if choice == 1:

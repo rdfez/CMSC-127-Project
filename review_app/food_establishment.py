@@ -1,74 +1,16 @@
 import mariadb
 import sys
 
-def init():
-    conn_bool = True
-    while conn_bool:
-        mariadb_password = input("Enter password: ")
-        try:
-            conn = mariadb.connect(
-                user="root",
-                password=mariadb_password,
-                host="localhost",
-                autocommit=True
-            )
-            if conn:
-                conn_bool = False
-        except mariadb.Error as e:
-            print(f"Error connecting to MariaDB Platform: {e}")
-            sys.exit(1)
-
-    global cur, connection
-    connection = conn
-    cur = connection.cursor()
-
-    cur.execute("CREATE DATABASE IF NOT EXISTS review_app;")
-    cur.execute("USE review_app;")
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS user (
-            user_id INT PRIMARY KEY AUTO_INCREMENT,
-            email VARCHAR(50) NOT NULL,
-            username VARCHAR(50) NOT NULL,
-            login_credentials VARCHAR(50) NOT NULL,
-            is_customer BOOLEAN,
-            is_manager BOOLEAN
-        );
-    ''')
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS food_establishment (
-            establishment_id INT PRIMARY KEY AUTO_INCREMENT,
-            establishment_name VARCHAR(50) NOT NULL,
-            establishment_rating INT DEFAULT NULL,
-            location VARCHAR(50),
-            manager_id INT,
-            FOREIGN KEY (manager_id) REFERENCES user(user_id)
-        );
-    ''')
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS food_item (
-            item_id INT PRIMARY KEY AUTO_INCREMENT,
-            food_name VARCHAR(50) NOT NULL,
-            price DECIMAL(10, 2) NOT NULL,
-            type VARCHAR(50) NOT NULL,
-            establishment_id INT,
-            manager_id INT,
-            FOREIGN KEY (establishment_id) REFERENCES food_establishment(establishment_id),
-            FOREIGN KEY (manager_id) REFERENCES user(user_id)
-        );
-    ''')
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS food_review (
-            review_id INT PRIMARY KEY AUTO_INCREMENT,
-            rating INT NOT NULL,
-            date DATE NOT NULL,
-            establishment_id INT,
-            item_id INT,
-            user_id INT, 
-            FOREIGN KEY (establishment_id) REFERENCES food_establishment(establishment_id),
-            FOREIGN KEY (item_id) REFERENCES food_item(item_id),
-            FOREIGN KEY (user_id) REFERENCES user(user_id)
-        );
-    ''')
+def formatItem(item):
+     return (
+        f"==============================\n"
+        f"Establishment ID: {item[0]}\n"
+        f"Establishment Name: {item[1]}\n"
+        f"Establishmen Rating: {item[2]}\n"
+        f"Location: {item[3]}\n"
+        f"Manager ID: {item[4]}\n"
+        f"==============================\n"
+    )
 
 def view_estab(choice):
     if choice == 1:
@@ -81,7 +23,7 @@ def view_estab(choice):
     
     if results:
         for row in results:
-            print(row)
+            print(formatItem(row))
     else:
         print("No establishments found for the given criteria.")
 
@@ -101,7 +43,7 @@ def edit_estab(id):
     ''', (id,))
     item = cur.fetchone()
     if item:
-        print(item)
+        print(formatItem(item))
         new_estName = input("Insert new establishment name: ")
         new_estRating = input("Insert new rating here: ")
         new_loc = input("Insert new location here: ")
@@ -126,27 +68,26 @@ def search_estab(id):
     ''', (id,))
     result = cur.fetchone()
     if result:
-        print(result)
+        print(formatItem(result))
     else:
         print("Establishment not found.")
 
 def main():
-    print("\nReview Information System")
-    init()
     estab_menu(cur)
 
 def estab_menu(main_cur):
     global cur
     cur = main_cur
     while True:
-        print("====== Menu ======\n")
-        print("1. View all food establishments\n")
-        print("2. View Highest-rated Food establishments\n")
-        print("3. Add a food establishment\n")
-        print("4. Update a food establishment\n")
-        print("5. Delete a food establishment\n")
-        print("6. Search a food establishment\n")
-        print("7. Exit\n")
+        print("\n===== Food Establishments =====\n")
+        print("[1] View all food establishments")
+        print("[2] View Highest-rated Food establishments")
+        print("[3] Add a food establishment")
+        print("[4] Update a food establishment")
+        print("[5] Delete a food establishment")
+        print("[6] Search a food establishment")
+        print("[0] Back to Menu")
+        print("\n==============================")
         choice = int(input("\nEnter your choice: "))
 
         if choice == 1:
@@ -180,7 +121,7 @@ def estab_menu(main_cur):
                 search_estab(id)
             except ValueError:
                 print("Invalid input. Please enter a valid ID.")
-        elif choice == 7:
+        elif choice == 0:
             break
         else:
             print("Invalid choice. Please select a valid option.")

@@ -110,12 +110,12 @@ init()
 
 while True:
   clear()
-  print("\n======= Main Menu ======\n")
+  print("\n========== Main Menu =========\n")
   print("[1] Food Establishments")
   print("[2] Food Items")
   print("[3] Reviews")
   print("[0] Exit")
-  print("\n========================")
+  print("\n==============================")
   choice = get_input("\nEnter Choice: ", "int", 0, 3, None, None)
 
   if choice == 1:
