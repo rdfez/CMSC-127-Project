@@ -58,9 +58,17 @@ def edit_estab(id):
 
 def delete_estab(id):
     cur.execute('''
-        DELETE FROM food_establishment WHERE establishment_id = ?
+    SELECT * FROM food_establishment WHERE establishment_id = ?
     ''', (id,))
-    print("Establishment deleted successfully.")
+    result = cur.fetchone()
+    if result:
+        cur.execute('''
+        DELETE FROM food_establishment WHERE establishment_id = ?
+        ''', (id,))
+        print("Establishment deleted successfully.")
+    else:
+        print("Establishment not found.")
+
 
 def search_estab(id):
     cur.execute('''
