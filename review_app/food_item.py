@@ -164,7 +164,7 @@ def updateItem(item_id):
     
 
 def deleteItem(item_id):
-    cur.execute("DELETE FROM food_item WHERE item_id = ?", item_id)
+    cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
 
 
 def searchItem(item_id):
