@@ -30,7 +30,7 @@ def formatItem(item):
 
 def viewItems():
 
-    establishment_id = input("Enter Establishment ID: ")
+    establishment_id = input("\nEnter Establishment ID: ")
 
     food_type = input("Enter Filter[MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]: ")
     sort = input("Enter Sort Price[DESC/ASC]: ")
@@ -85,7 +85,7 @@ def searchItemEstablishment():
 
 
 def addItem():
-    food_item_id = int(input("Enter Item ID: "))
+    food_item_id = int(input("\nEnter Item ID: "))
     food_name = input("Enter Food Name: ")
     food_price = int(input("Enter Price: "))
     food_type = input("Enter Enter Type: ")
@@ -113,9 +113,17 @@ def updateItem():
     
 
 def deleteItem():
-    cur.execute("SELECT * FROM food_item")
+    cur.execute("\nSELECT * FROM food_item")
+    items = cur.fetchall()
+    
+    if items:
+        print("Food Items:")
+        for item in items:
+            print(formatItem(item))
+    else:
+        print("No food items to delete.")
 
-    item_id = int(input("Enter Item ID: "))
+    item_id = int(input("\nEnter Item ID: "))
 
     cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
 
@@ -148,23 +156,28 @@ def item_menu(main_cur):
       choice = input("\nEnter your choice: ")
 
       if choice == '1':
+          print("\n-> Viewing all food itemms from a food establishment")
           viewItems()
 
       elif choice == '2':
+          print("\n-> Searching item from any establishment")
           searchItemEstablishment()
 
       elif choice == '3':
+          print("\n-> Adding a food item")
           addItem()
 
       elif choice == '4':   
+          print("\n-> Updating a food item")
           updateItem()
 
       elif choice == '5':
-          
+          print("\n-> Deletting a food item")
           deleteItem()
 
       elif choice == '6':
-          item_id = int(input("Enter Item ID: "))
+          print("\n-> Searching for a food item")
+          item_id = int(input("\nEnter Item ID: "))
           searchItem(item_id)
 
       elif choice == '0':
