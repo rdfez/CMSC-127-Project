@@ -133,9 +133,11 @@ def search_estab(id):
 def main():
     print("\nReview Information System")
     init()
-    food_menu()
+    estab_menu(cur)
 
-def food_menu():
+def estab_menu(main_cur):
+    global cur
+    cur = main_cur
     while True:
         print("====== Menu ======\n")
         print("1. View all food establishments\n")
@@ -182,6 +184,8 @@ def food_menu():
             break
         else:
             print("Invalid choice. Please select a valid option.")
+
+global cur 
 
 if __name__ == "__main__":
     main()

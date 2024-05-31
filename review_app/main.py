@@ -1,9 +1,9 @@
 import mariadb
 import os
 
-from food_establishment import estab_menu, get_estab, view_estab, add_estab
-from food_item import item_menu, viewItems, addItem, searchItem, searchItemEstablishment, deleteItem
-from food_review import review_menu, add_review, view_reviews, update_review, delete_review
+from food_establishment import estab_menu
+from food_item import item_menu
+from food_review import review_menu
 
 from misc import get_input, get_id, clear
 
