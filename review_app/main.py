@@ -54,8 +54,10 @@ def init():
             `location` VARCHAR (50),
             `manager_id` INT (50) NOT NULL,
             PRIMARY KEY (`establishment_id`),
-            CONSTRAINT `foodestablishment_managerid_fk` FOREIGN KEY (`manager_id`) REFERENCES
-        `user` (`user_id`)
+            CONSTRAINT `foodestablishment_managerid_fk` 
+              FOREIGN KEY (`manager_id`) REFERENCES `user` (`user_id`)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE
         );
     ''')
     cur.execute('''
@@ -67,10 +69,14 @@ def init():
             `establishment_id` INT (50) NOT NULL,
             `manager_id` INT (50) NOT NULL,
             PRIMARY KEY (`item_id`),
-            CONSTRAINT `fooditem_establishmentid_fk` FOREIGN KEY (`establishment_id`) REFERENCES
-        `food_establishment` (`establishment_id`),
-            CONSTRAINT `fooditem_managerid_fk` FOREIGN KEY (`manager_id`) REFERENCES
-        `user` (`user_id`)
+            CONSTRAINT `fooditem_establishmentid_fk` 
+              FOREIGN KEY (`establishment_id`) REFERENCES `food_establishment` (`establishment_id`)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE,
+            CONSTRAINT `fooditem_managerid_fk` 
+              FOREIGN KEY (`manager_id`) REFERENCES `user` (`user_id`)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE
         );
     ''')
     cur.execute('''
@@ -82,12 +88,18 @@ def init():
             `item_id` INT (50),
             `user_id` INT (50) NOT NULL, 
             PRIMARY KEY (`review_id`),
-            CONSTRAINT `foodreview_establishmentid_fk` FOREIGN KEY(`establishment_id`) REFERENCES
-        `food_establishment` (`establishment_id`),
-            CONSTRAINT `foodreview_itemid_fk` FOREIGN KEY (`item_id`) REFERENCES
-        `food_item` (`item_id`),
-            CONSTRAINT `foodreview_userid_fk` FOREIGN KEY (`user_id`) REFERENCES
-        `user` (`user_id`)
+            CONSTRAINT `foodreview_establishmentid_fk` 
+              FOREIGN KEY(`establishment_id`) REFERENCES `food_establishment` (`establishment_id`)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE,
+            CONSTRAINT `foodreview_itemid_fk` 
+              FOREIGN KEY (`item_id`) REFERENCES `food_item` (`item_id`)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE,
+            CONSTRAINT `foodreview_userid_fk` 
+              FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE
         );
     ''')
 
