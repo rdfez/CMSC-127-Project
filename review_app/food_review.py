@@ -50,17 +50,9 @@ def add_review(cur):
         return
 
     # Get total number of reviews
-    review_total = count(cur, "food_review", False) + 1
+    review_total = count(cur, "food_review", False)
 
-    # Get id of new review by looping through review ids
-    for i in range(1, review_total + 1):
-        # Check if id is being used
-        if validate_id(cur, "food_review", i) == 1:
-            continue
-        else:
-            # Assign id of new review
-            new_review_id = i
-            break
+    new_review_id = review_total+1
 
     # Entity id
     if (type == "food_establishment"):
