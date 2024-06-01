@@ -91,10 +91,17 @@ def estab_menu(cur):
     def add_estab_ui():
         try:
             estab_id = int(simpledialog.askstring("Input", "Input Establishment ID:"))
-            estab_name = simpledialog.askstring("Input", "Input desired Establishment name:")
-            loc = simpledialog.askstring("Input", "Input Establishment Location:")
-            estab_manager_id = int(simpledialog.askstring("Input", "Input Manager ID of Establishment:"))
-            add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget)
+
+            cur.execute("SELECT * FROM food_establishment WHERE establishment_id = ?", (estab_id,))
+            existing_estab = cur.fetchone()
+
+            if existing_estab:
+                messagebox.showerror("Error", "Establishment ID is already in use. Please choose a different ID." )
+            else:
+                estab_name = simpledialog.askstring("Input", "Input desired Establishment name:")
+                loc = simpledialog.askstring("Input", "Input Establishment Location:")
+                estab_manager_id = int(simpledialog.askstring("Input", "Input Manager ID of Establishment:"))
+                add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
 

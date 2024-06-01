@@ -118,15 +118,24 @@ def item_menu(cur):
     def add_item_ui():
         try:
             food_item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
-            food_name = simpledialog.askstring("Input", "Enter Food Name:")
-            food_price = int(simpledialog.askstring("Input", "Enter Price:"))
-            food_type = simpledialog.askstring("Input", "Enter Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
-            food_establishment_id = int(simpledialog.askstring("Input", "Enter Establishment ID:"))
-            food_manager_id = int(simpledialog.askstring("Input", "Enter Manager ID:"))
-            add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget)
+            
+            # Check if item ID already exists
+            cur.execute("SELECT * FROM food_item WHERE item_id = ?", (food_item_id,))
+            existing_item = cur.fetchone()
+
+            if existing_item:
+                messagebox.showerror("Error", "Item ID already exists. Please choose a different ID.")
+            else:
+                # Proceed to ask for other details
+                food_name = simpledialog.askstring("Input", "Enter Food Name:")
+                food_price = int(simpledialog.askstring("Input", "Enter Price:"))
+                food_type = simpledialog.askstring("Input", "Enter Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+                food_establishment_id = int(simpledialog.askstring("Input", "Enter Establishment ID:"))
+                food_manager_id = int(simpledialog.askstring("Input", "Enter Manager ID:"))
+                add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
-
+            
     def update_item_ui():
         try:
             item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
