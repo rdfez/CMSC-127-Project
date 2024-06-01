@@ -327,7 +327,7 @@ def count(cur, entity, condition=None):
     return cur.fetchone()[0]
 
 def validate_id(cur, entity, id):
-    cur.execute(f"SELECT COUNT(*) FROM {entity} WHERE {entity}_id = ?", (id,))
+    cur.execute(f"SELECT COUNT(*) FROM {entity} WHERE {id} = ?", (id,))
     return cur.fetchone()[0]
 
 def get_id(prompt, entity, condition=None, is_optional=None, cur=None):

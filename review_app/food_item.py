@@ -94,7 +94,9 @@ def item_menu(cur):
         try:
             establishment_id = int(simpledialog.askstring("Input", "Enter Establishment ID:"))
             food_type = simpledialog.askstring("Input", "Enter Filter [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+            food_type = food_type.upper()
             sort = simpledialog.askstring("Input", "Enter Sort Price [DESC/ASC]:")
+            sort = sort.upper()
             view_items(cur, establishment_id, food_type, sort, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
@@ -108,6 +110,7 @@ def item_menu(cur):
                 price_max = int(simpledialog.askstring("Input", "Enter Price Range Maximum:"))
             if choice == 2 or choice == 3:
                 food_type = simpledialog.askstring("Input", "Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+                food_type = food_type.upper()
             search_item_establishment(cur, choice, price_min, price_max, food_type, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
