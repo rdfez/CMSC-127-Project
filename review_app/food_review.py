@@ -221,7 +221,7 @@ def view_reviews(cur):
     item_total = count(cur, "food_item", False)
 
     # Halt if there are no entities (both establishment and item)
-    if (not(establishment_total > 0) and not(item_total > 0)):
+    if (establishment_total <= 0 and item_total <= 0):
         show_message("There are no food establishments or food items!")
         return
 
@@ -234,12 +234,15 @@ def view_reviews(cur):
             return
         else:
             type = "food_establishment"
+            id_type = "establishment"
     elif (type_input == 2):
         if (not(item_total > 0)):
             show_message("There are no food items!")
             return
         else:
             type = "food_item"
+            id_type = "item"
+
     elif (type_input == 0):
         return
 
@@ -250,9 +253,9 @@ def view_reviews(cur):
 
     # Get all reviews for chosen type and id
     if (is_recent):
-        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {type}_id = ? AND DATEDIFF(NOW(), date) <= 30", (id,))
+        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {id_type}_id = ? AND DATEDIFF(NOW(), date) <= 30", (id,))
     else:
-        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {type}_id = ?", (id,))
+        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {id_type}_id = ?", (id,))
 
     # Fetch all results
     reviews = cur.fetchall()
@@ -260,9 +263,9 @@ def view_reviews(cur):
     # Prompt for no review
     if (len(reviews) == 0):
         if (is_recent):
-            show_message(f"There are no recent reviews for that food {type}!")
+            show_message(f"There are no recent reviews for that food {id_type}!")
         else:
-            show_message(f"There are no reviews for that food {type}!")
+            show_message(f"There are no reviews for that food {id_type}!")
     else:
         reviews_text = "\n=============================="
         for (review_id, rating, date, establishment_id, item_id, user_id) in reviews:
