@@ -100,6 +100,9 @@ def item_menu(cur):
             view_items(cur, establishment_id, food_type, sort, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
+
 
     def search_item_establishment_ui():
         try:
@@ -114,6 +117,8 @@ def item_menu(cur):
             search_item_establishment(cur, choice, price_min, price_max, food_type, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
 
     def add_item_ui():
         try:
@@ -135,7 +140,9 @@ def item_menu(cur):
                 add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
-            
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
+
     def update_item_ui():
         try:
             item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
@@ -145,6 +152,8 @@ def item_menu(cur):
             update_item(cur, item_id, new_name, new_price, new_type, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
 
     def delete_item_ui():
         try:
@@ -152,6 +161,8 @@ def item_menu(cur):
             delete_item(cur, item_id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
 
     def search_item_ui():
         try:
@@ -159,6 +170,8 @@ def item_menu(cur):
             search_item(cur, item_id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
 
     item_window = tk.Toplevel()
     item_window.title("Food Items")

@@ -4,6 +4,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import mariadb
+import tkinter.messagebox as tkMessageBox
 
 def show_message(message):
     messagebox.showinfo("Information", message)
@@ -11,14 +12,34 @@ def show_message(message):
 # Helper function to get user input through a dialog
 def get_user_input(prompt, input_type="string", min_val=None, max_val=None, options=None):
     if input_type == "int":
-        return simpledialog.askinteger("Input", prompt, minvalue=min_val, maxvalue=max_val)
+        value = simpledialog.askinteger("Input", prompt, minvalue=min_val, maxvalue=max_val)
+        if value is None:
+            tkMessageBox.showinfo("Information", "Transaction cancelled")
+            return value
+        else:
+            return value
     elif input_type == "date":
-        return simpledialog.askstring("Input", prompt)
+        value = simpledialog.askstring("Input", prompt)
+        if value is None:
+            tkMessageBox.showinfo("Information", "Transaction cancelled")
+            return value
+        else:
+            return value
     elif input_type == "bool":
-        return messagebox.askyesno("Input", prompt)
+        value = messagebox.askyesno("Input", prompt)
+        if value is None:
+            tkMessageBox.showinfo("Information", "Transaction cancelled")
+            return value
+        else:
+            return value
     else:
-        return simpledialog.askstring("Input", prompt)
-
+        value = simpledialog.askstring("Input", prompt)
+        if value is None:
+            tkMessageBox.showinfo("Information", "Transaction cancelled")
+            return value
+        else:
+            return value
+        
 # Add a review
 def add_review(cur):
     # Get total number of establishments

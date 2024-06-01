@@ -64,10 +64,18 @@ def delete_estab(cur, id, text_widget):
     ''', (id,))
     result = cur.fetchone()
     if result:
-        cur.execute('''
-            DELETE FROM food_establishment WHERE establishment_id = ?
-        ''', (id,))
-        text_widget.insert(tk.END, "Establishment deleted successfully.\n")
+        # Check if there are associated food items
+        cur.execute("SELECT * FROM food_item WHERE establishment_id = ?", (id,))
+        associated_items = cur.fetchall()
+        if associated_items:
+            # Display error message if there are associated items
+            text_widget.insert(tk.END, "Unable to delete establishment. It has associated food items.\n")
+        else:
+            # No associated items, proceed with deletion
+            cur.execute('''
+                DELETE FROM food_establishment WHERE establishment_id = ?
+            ''', (id,))
+            text_widget.insert(tk.END, "Establishment deleted successfully.\n")
     else:
         text_widget.insert(tk.END, "Establishment not found.\n")
 
@@ -104,6 +112,8 @@ def estab_menu(cur):
                 add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
 
     def edit_estab_ui():
         try:
@@ -111,13 +121,18 @@ def estab_menu(cur):
             edit_estab(cur, id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter a valid ID.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
 
     def delete_estab_ui():
+        view_all()
         try:
             id = int(simpledialog.askstring("Input", "Insert the ID of the establishment to be deleted:"))
             delete_estab(cur, id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter a valid ID.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
 
     def search_estab_ui():
         try:
@@ -125,6 +140,8 @@ def estab_menu(cur):
             search_estab(cur, id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter a valid ID.")
+        except TypeError:
+            messagebox.showinfo("Info", "Transaction cancelled.")
 
     estab_window = tk.Toplevel()
     estab_window.title("Food Establishments")
