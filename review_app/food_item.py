@@ -1,22 +1,9 @@
 import mariadb
+import tkinter as tk
+from tkinter import messagebox, simpledialog
 
-########################################################
-# Food Item
-# 1. View all food items from a food establishment
-# == no filter/sort
-# == filter by food type (no filter / meat / veg / etc.)
-# == sort by price
-# 2. Search item from any establishment 
-# == based on price range  
-# == based on food type
-# == based on price range and food type
-# 3. Add a food item
-# 4. Update a food item
-# 5. Delete a food item
-# 6. Search a food item
-
-def formatItem(item):
-     return (
+def format_item(item):
+    return (
         f"==============================\n"
         f"Item ID: {item[0]}\n"
         f"Food Name: {item[1]}\n"
@@ -27,159 +14,153 @@ def formatItem(item):
         f"==============================\n"
     )
 
-
-def viewItems():
-
-    establishment_id = input("\nEnter Establishment ID: ")
-
-    food_type = input("Enter Filter[MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]: ")
-    sort = input("Enter Sort Price[DESC/ASC]: ")
-
-    if filter == 'NA':
-        cur.execute("SELECT * FROM food_item WHERE establishment_id = ? ORDER BY price "+ sort , (establishment_id,))
+def view_items(cur, establishment_id, food_type, sort, text_widget):
+    if food_type == 'NA':
+        cur.execute("SELECT * FROM food_item WHERE establishment_id = ? ORDER BY price " + sort, (establishment_id,))
     else:
-        cur.execute("SELECT * FROM food_item WHERE establishment_id = ? AND type = ? ORDER BY price "+ sort, (establishment_id, food_type))
+        cur.execute("SELECT * FROM food_item WHERE establishment_id = ? AND type = ? ORDER BY price " + sort, (establishment_id, food_type))
 
     items = cur.fetchall()
+    text_widget.delete(1.0, tk.END)
     
     if items:
-        print("Food Items:")
+        text_widget.insert(tk.END, "Food Items:\n")
         for item in items:
-            print(formatItem(item))
+            text_widget.insert(tk.END, format_item(item))
     else:
-        print("No food items found for this establishment.")
+        text_widget.insert(tk.END, "No food items found for this establishment.\n")
 
-
-def searchItemEstablishment():
-
-    print("\n==============================\n")
-    print("[1] Based on Price Range")
-    print("[2] Based on Food Type")
-    print("[3] Based on Price Range and Food Type")
-    
-    choice = int(input("\nEnter Filter Choice: "))
-
+def search_item_establishment(cur, choice, price_min, price_max, food_type, text_widget):
     if choice == 1:
-        price_min = int(input("Enter Price Range Minimum: "))
-        price_max = int(input("Enter Price Range Maximum: "))
         cur.execute("SELECT * FROM food_item WHERE price >= ? AND price <= ?", (price_min, price_max))
-
-    elif choice == 2:  
-        food_type = input("Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+    elif choice == 2:
         cur.execute("SELECT * FROM food_item WHERE type = ?", (food_type,))
-
-    elif choice == 3: 
-        price_min = int(input("Enter Price Range Minimum: "))
-        price_max = int(input("Enter Price Range Maximum: "))
-        food_type = input("Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+    elif choice == 3:
         cur.execute("SELECT * FROM food_item WHERE type = ? AND price >= ? AND price <= ?", (food_type, price_min, price_max))
-    
+
     items = cur.fetchall()
-    
+    text_widget.delete(1.0, tk.END)
+
     if items:
-        print("Food Items:")
+        text_widget.insert(tk.END, "Food Items:\n")
         for item in items:
-            print(formatItem(item))
+            text_widget.insert(tk.END, format_item(item))
     else:
-        print("No food items found for this establishment.")
+        text_widget.insert(tk.END, "No food items found for this establishment.\n")
 
+def add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget):
+    try:
+        cur.execute("INSERT INTO food_item (item_id, food_name, price, type, establishment_id, manager_id) VALUES (?, ?, ?, ?, ?, ?)", 
+                    (food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id))
+        text_widget.insert(tk.END, "Food item added successfully.\n")
+    except mariadb.Error as e:
+        text_widget.insert(tk.END, f"Error: {e}\n")
 
-def addItem():
-    food_item_id = int(input("\nEnter Item ID: "))
-    food_name = input("Enter Food Name: ")
-    food_price = int(input("Enter Price: "))
-    food_type = input("Enter Enter Type: ")
-    food_establishment_id = int(input("Enter Establishment ID: "))
-    food_manager_id = int(input("Enter Manager ID: "))
-
-    cur.execute("INSERT INTO food_item (item_id, food_name, price, type, establishment_id, manager_id) VALUES (?, ?, ?, ?, ?, ?)", (food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id))
-
-
-def updateItem():
-    item_id = int(input("\nEnter Item ID: "))
-
-    cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
-
-    item = cur.fetchone()
-    if item:
-        print(formatItem(item))
-        new_name  = input("Updated Name: ")
-        new_price  = int(input("Updated Price: "))
-        new_type = input("Updated Type: ")
-    
-        cur.execute("UPDATE food_item SET food_name = ?, price = ?, type = ? WHERE item_id = ?", (new_name, new_price, new_type, item_id))
-    else:
-        print("Food item not found.")
-    
-
-def deleteItem():
-    cur.execute("\nSELECT * FROM food_item")
-    items = cur.fetchall()
-    
-    if items:
-        print("Food Items:")
-        for item in items:
-            print(formatItem(item))
-    else:
-        print("No food items to delete.")
-
-    item_id = int(input("\nEnter Item ID: "))
-
-    cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
-
-
-def searchItem(item_id):
+def update_item(cur, item_id, new_name, new_price, new_type, text_widget):
     cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
     item = cur.fetchone()
+    text_widget.delete(1.0, tk.END)
+
     if item:
-        print(formatItem(item))
+        cur.execute("UPDATE food_item SET food_name = ?, price = ?, type = ? WHERE item_id = ?", 
+                    (new_name, new_price, new_type, item_id))
+        text_widget.insert(tk.END, "Food item updated successfully.\n")
     else:
-        print("Food item not found.")
+        text_widget.insert(tk.END, "Food item not found.\n")
 
-########################################################
+def delete_item(cur, item_id, text_widget):
+    cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
+    item = cur.fetchone()
+    text_widget.delete(1.0, tk.END)
 
-global cur
+    if item:
+        cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
+        text_widget.insert(tk.END, "Food item deleted successfully.\n")
+    else:
+        text_widget.insert(tk.END, "Food item not found.\n")
 
-def item_menu(main_cur):
-  global cur
-  cur = main_cur
-  while True:
-      print("\n========= Food Items =========\n")
-      print("[1] View all food items from a food establishment")
-      print("[2] Search item from any establishment")
-      print("[3] Add a food item")
-      print("[4] Update a food item")
-      print("[5] Delete a food item")
-      print("[6] Search a food item")
-      print("[0] Back to Menu")
-      print("\n==============================")
-      choice = input("\nEnter your choice: ")
+def search_item(cur, item_id, text_widget):
+    cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
+    item = cur.fetchone()
+    text_widget.delete(1.0, tk.END)
 
-      if choice == '1':
-          print("\n-> Viewing all food itemms from a food establishment")
-          viewItems()
+    if item:
+        text_widget.insert(tk.END, format_item(item))
+    else:
+        text_widget.insert(tk.END, "Food item not found.\n")
 
-      elif choice == '2':
-          print("\n-> Searching item from any establishment")
-          searchItemEstablishment()
+def item_menu(cur):
+    def view_all_ui():
+        try:
+            establishment_id = int(simpledialog.askstring("Input", "Enter Establishment ID:"))
+            food_type = simpledialog.askstring("Input", "Enter Filter [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+            sort = simpledialog.askstring("Input", "Enter Sort Price [DESC/ASC]:")
+            view_items(cur, establishment_id, food_type, sort, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter valid data.")
 
-      elif choice == '3':
-          print("\n-> Adding a food item")
-          addItem()
+    def search_item_establishment_ui():
+        try:
+            choice = int(simpledialog.askstring("Input", "Enter Filter Choice [1: Price Range, 2: Food Type, 3: Both]:"))
+            price_min, price_max, food_type = None, None, None
+            if choice == 1 or choice == 3:
+                price_min = int(simpledialog.askstring("Input", "Enter Price Range Minimum:"))
+                price_max = int(simpledialog.askstring("Input", "Enter Price Range Maximum:"))
+            if choice == 2 or choice == 3:
+                food_type = simpledialog.askstring("Input", "Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+            search_item_establishment(cur, choice, price_min, price_max, food_type, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter valid data.")
 
-      elif choice == '4':   
-          print("\n-> Updating a food item")
-          updateItem()
+    def add_item_ui():
+        try:
+            food_item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
+            food_name = simpledialog.askstring("Input", "Enter Food Name:")
+            food_price = int(simpledialog.askstring("Input", "Enter Price:"))
+            food_type = simpledialog.askstring("Input", "Enter Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+            food_establishment_id = int(simpledialog.askstring("Input", "Enter Establishment ID:"))
+            food_manager_id = int(simpledialog.askstring("Input", "Enter Manager ID:"))
+            add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter valid data.")
 
-      elif choice == '5':
-          print("\n-> Deletting a food item")
-          deleteItem()
+    def update_item_ui():
+        try:
+            item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
+            new_name = simpledialog.askstring("Input", "Updated Name:")
+            new_price = int(simpledialog.askstring("Input", "Updated Price:"))
+            new_type = simpledialog.askstring("Input", "Updated Type:")
+            update_item(cur, item_id, new_name, new_price, new_type, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter valid data.")
 
-      elif choice == '6':
-          print("\n-> Searching for a food item")
-          item_id = int(input("\nEnter Item ID: "))
-          searchItem(item_id)
+    def delete_item_ui():
+        try:
+            item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
+            delete_item(cur, item_id, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter valid data.")
 
-      elif choice == '0':
+    def search_item_ui():
+        try:
+            item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
+            search_item(cur, item_id, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter valid data.")
 
-          break
+    item_window = tk.Toplevel()
+    item_window.title("Food Items")
+
+    tk.Label(item_window, text="Food Items Menu", font=("Arial", 16)).pack(pady=10)
+
+    tk.Button(item_window, text="View all food items from a food establishment", command=view_all_ui).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(item_window, text="Search item from any establishment", command=search_item_establishment_ui).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(item_window, text="Add a food item", command=add_item_ui).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(item_window, text="Update a food item", command=update_item_ui).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(item_window, text="Delete a food item", command=delete_item_ui).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(item_window, text="Search a food item", command=search_item_ui).pack(fill=tk.X, padx=20, pady=5)
+
+    text_widget = tk.Text(item_window, wrap=tk.WORD, height=10)
+    text_widget.pack(fill=tk.BOTH, padx=20, pady=10)
+
+    tk.Button(item_window, text="Close", command=item_window.destroy).pack(pady=10)

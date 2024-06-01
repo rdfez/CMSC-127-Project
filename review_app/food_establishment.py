@@ -1,140 +1,137 @@
 import mariadb
-import sys
+import tkinter as tk
+from tkinter import messagebox, simpledialog
 
-def formatItem(item):
-     return (
+def format_item(item):
+    return (
         f"==============================\n"
         f"Establishment ID: {item[0]}\n"
         f"Establishment Name: {item[1]}\n"
-        f"Establishmen Rating: {item[2]}\n"
+        f"Establishment Rating: {item[2]}\n"
         f"Location: {item[3]}\n"
         f"Manager ID: {item[4]}\n"
         f"==============================\n"
     )
 
-def view_estab(choice):
+def view_estab(cur, choice, text_widget):
     if choice == 1:
         cur.execute("SELECT * FROM food_establishment")
     elif choice == 2:
         cur.execute("SELECT * FROM food_establishment WHERE establishment_rating >= 4")
-    
+
     results = cur.fetchall()
-    print(f"Number of establishments found: {len(results)}")
-    
+    text_widget.delete(1.0, tk.END)
+    text_widget.insert(tk.END, f"Number of establishments found: {len(results)}\n")
+
     if results:
         for row in results:
-            print(formatItem(row))
+            text_widget.insert(tk.END, format_item(row))
     else:
-        print("No establishments found for the given criteria.")
+        text_widget.insert(tk.END, "No establishments found for the given criteria.\n")
 
-def add_estab(estabId, estabName, loc, estabManagerId):
+def add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget):
     try:
         cur.execute('''
-            INSERT INTO food_establishment (establishment_id, establishment_name, establishment_rating, location, manager_id)        
+            INSERT INTO food_establishment (establishment_id, establishment_name, establishment_rating, location, manager_id)
             VALUES (?, ?, ?, ?, ?)
-        ''', (estabId, estabName, None, loc, estabManagerId))
-        print("Establishment added successfully.")
+        ''', (estab_id, estab_name, None, loc, estab_manager_id))
+        text_widget.insert(tk.END, "Establishment added successfully.\n")
     except mariadb.Error as e:
-        print(f"Error: {e}")
+        text_widget.insert(tk.END, f"Error: {e}\n")
 
-def edit_estab(id):
+def edit_estab(cur, id, text_widget):
     cur.execute('''
-       SELECT * FROM food_establishment WHERE establishment_id = ?     
+        SELECT * FROM food_establishment WHERE establishment_id = ?
     ''', (id,))
     item = cur.fetchone()
     if item:
-        print(formatItem(item))
-        new_estName = input("Insert new establishment name: ")
-        new_estRating = input("Insert new rating here: ")
-        new_loc = input("Insert new location here: ")
+        text_widget.insert(tk.END, format_item(item))
+        new_est_name = simpledialog.askstring("Input", "Insert new establishment name:")
+        new_est_rating = simpledialog.askstring("Input", "Insert new rating here:")
+        new_loc = simpledialog.askstring("Input", "Insert new location here:")
         cur.execute('''
             UPDATE food_establishment 
             SET establishment_name = ?, establishment_rating = ?, location = ?
             WHERE establishment_id = ?
-        ''', (new_estName, new_estRating, new_loc, id))
-        print("Establishment updated successfully.")
+        ''', (new_est_name, new_est_rating, new_loc, id))
+        text_widget.insert(tk.END, "Establishment updated successfully.\n")
     else:
-        print("Establishment not found.")
+        text_widget.insert(tk.END, "Establishment not found.\n")
 
-def delete_estab(id):
-    cur.execute('''
-    SELECT * FROM food_establishment WHERE establishment_id = ?
-    ''', (id,))
-    result = cur.fetchone()
-    if result:
-        cur.execute('''
-        DELETE FROM food_establishment WHERE establishment_id = ?
-        ''', (id,))
-        print("Establishment deleted successfully.")
-    else:
-        print("Establishment not found.")
-
-
-def search_estab(id):
+def delete_estab(cur, id, text_widget):
     cur.execute('''
         SELECT * FROM food_establishment WHERE establishment_id = ?
     ''', (id,))
     result = cur.fetchone()
     if result:
-        print(formatItem(result))
+        cur.execute('''
+            DELETE FROM food_establishment WHERE establishment_id = ?
+        ''', (id,))
+        text_widget.insert(tk.END, "Establishment deleted successfully.\n")
     else:
-        print("Establishment not found.")
+        text_widget.insert(tk.END, "Establishment not found.\n")
 
-def main():
-    estab_menu(cur)
+def search_estab(cur, id, text_widget):
+    cur.execute('''
+        SELECT * FROM food_establishment WHERE establishment_id = ?
+    ''', (id,))
+    result = cur.fetchone()
+    if result:
+        text_widget.insert(tk.END, format_item(result))
+    else:
+        text_widget.insert(tk.END, "Establishment not found.\n")
 
-def estab_menu(main_cur):
-    global cur
-    cur = main_cur
-    while True:
-        print("\n===== Food Establishments =====\n")
-        print("[1] View all food establishments")
-        print("[2] View Highest-rated Food establishments")
-        print("[3] Add a food establishment")
-        print("[4] Update a food establishment")
-        print("[5] Delete a food establishment")
-        print("[6] Search a food establishment")
-        print("[0] Back to Menu")
-        print("\n==============================")
-        choice = int(input("\nEnter your choice: "))
+def estab_menu(cur):
+    def view_all():
+        view_estab(cur, 1, text_widget)
 
-        if choice == 1:
-            view_estab(1)
-        elif choice == 2:
-            view_estab(2)
-        elif choice == 3:
-            try:
-                estabId = int(input("\nInput Establishment ID: "))
-                estabName = input("\nInput desired Establishment name: ")
-                loc = input("\nInput Establishment Location: ")
-                estabManagerId = int(input("\nInput Manager ID of Establishment: "))
-                add_estab(estabId, estabName, loc, estabManagerId)
-            except ValueError:
-                print("Invalid input. Please enter valid data.")
-        elif choice == 4:
-            try:
-                id = int(input("\nPlease enter the ID of the establishment you want to edit: "))
-                edit_estab(id)
-            except ValueError:
-                print("Invalid input. Please enter a valid ID.")
-        elif choice == 5:
-            try:
-                id = int(input("\nInsert the ID of the establishment to be deleted: "))
-                delete_estab(id)
-            except ValueError:
-                print("Invalid input. Please enter a valid ID.")
-        elif choice == 6:
-            try:
-                id = int(input("\nInsert the ID of the establishment to be searched: "))
-                search_estab(id)
-            except ValueError:
-                print("Invalid input. Please enter a valid ID.")
-        elif choice == 0:
-            break
-        else:
-            print("Invalid choice. Please select a valid option.")
+    def view_high_rated():
+        view_estab(cur, 2, text_widget)
 
-global cur 
+    def add_estab_ui():
+        try:
+            estab_id = int(simpledialog.askstring("Input", "Input Establishment ID:"))
+            estab_name = simpledialog.askstring("Input", "Input desired Establishment name:")
+            loc = simpledialog.askstring("Input", "Input Establishment Location:")
+            estab_manager_id = int(simpledialog.askstring("Input", "Input Manager ID of Establishment:"))
+            add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter valid data.")
 
-if __name__ == "__main__":
-    main()
+    def edit_estab_ui():
+        try:
+            id = int(simpledialog.askstring("Input", "Please enter the ID of the establishment you want to edit:"))
+            edit_estab(cur, id, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter a valid ID.")
+
+    def delete_estab_ui():
+        try:
+            id = int(simpledialog.askstring("Input", "Insert the ID of the establishment to be deleted:"))
+            delete_estab(cur, id, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter a valid ID.")
+
+    def search_estab_ui():
+        try:
+            id = int(simpledialog.askstring("Input", "Insert the ID of the establishment to be searched:"))
+            search_estab(cur, id, text_widget)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input. Please enter a valid ID.")
+
+    estab_window = tk.Toplevel()
+    estab_window.title("Food Establishments")
+
+    tk.Label(estab_window, text="Food Establishments Menu", font=("Arial", 16)).pack(pady=10)
+
+    tk.Button(estab_window, text="View all food establishments", command=view_all).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(estab_window, text="View Highest-rated Food establishments", command=view_high_rated).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(estab_window, text="Add a food establishment", command=add_estab_ui).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(estab_window, text="Update a food establishment", command=edit_estab_ui).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(estab_window, text="Delete a food establishment", command=delete_estab_ui).pack(fill=tk.X, padx=20, pady=5)
+    tk.Button(estab_window, text="Search a food establishment", command=search_estab_ui).pack(fill=tk.X, padx=20, pady=5)
+
+    text_widget = tk.Text(estab_window, wrap=tk.WORD, height=10)
+    text_widget.pack(fill=tk.BOTH, padx=20, pady=10)
+
+    tk.Button(estab_window, text="Close", command=estab_window.destroy).pack(pady=10)
