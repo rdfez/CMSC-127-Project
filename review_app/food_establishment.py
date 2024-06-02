@@ -48,14 +48,21 @@ def view_estab(cur, choice, text_widget):
 #       2.4. estab_manager_id (int):
 #   3. text_widget
 def add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget):
+    text_widget.delete(1.0, tk.END)
     try:
         cur.execute('''
             INSERT INTO food_establishment (establishment_id, establishment_name, establishment_rating, location, manager_id)
             VALUES (?, ?, ?, ?, ?)
         ''', (estab_id, estab_name, None, loc, estab_manager_id))
+
+        cur.execute('SELECT * FROM food_establishment WHERE establishment_id = ?', (estab_id,))
+        item = cur.fetchone()
+        text_widget.insert(tk.END, format_item(item))
         text_widget.insert(tk.END, "Establishment added successfully.\n")
+        
+        
     except mariadb.Error as e:
-        text_widget.insert(tk.END, f"Error: {e}\n")
+        text_widget.insert(tk.END, f"\nError: {e}\n")
 
 # Update a food establishment
 # - Parameters:
@@ -67,19 +74,26 @@ def edit_estab(cur, id, text_widget):
         SELECT * FROM food_establishment WHERE establishment_id = ?
     ''', (id,))
     item = cur.fetchone()
+    text_widget.delete(1.0, tk.END)
+
     if item:
         text_widget.insert(tk.END, format_item(item))
         new_est_name = simpledialog.askstring("Input", "Insert new establishment name:")
-        new_est_rating = simpledialog.askstring("Input", "Insert new rating here:")
+        new_est_rating = simpledialog.askstring("Input", "Insert new rating here (1-5):")
         new_loc = simpledialog.askstring("Input", "Insert new location here:")
         cur.execute('''
             UPDATE food_establishment 
             SET establishment_name = ?, establishment_rating = ?, location = ?
             WHERE establishment_id = ?
         ''', (new_est_name, new_est_rating, new_loc, id))
-        text_widget.insert(tk.END, "Establishment updated successfully.\n")
+
+        cur.execute('SELECT * FROM food_establishment WHERE establishment_id = ?', (id,))
+        updated_item = cur.fetchone()
+        text_widget.insert(tk.END, format_item(updated_item))
+        text_widget.insert(tk.END, "\nEstablishment updated successfully.\n")
+        
     else:
-        text_widget.insert(tk.END, "Establishment not found.\n")
+        text_widget.insert(tk.END, "\nEstablishment not found.\n")
 
 # Delete a food establishment
 # - Parameters:
@@ -87,6 +101,7 @@ def edit_estab(cur, id, text_widget):
 #   2. id (int): inputted establishment_id to be deleted from food establishment
 #   3. text_widget
 def delete_estab(cur, id, text_widget):
+    text_widget.delete(1.0, tk.END)
     cur.execute('''
         SELECT * FROM food_establishment WHERE establishment_id = ?
     ''', (id,))
@@ -103,6 +118,7 @@ def delete_estab(cur, id, text_widget):
             cur.execute('''
                 DELETE FROM food_establishment WHERE establishment_id = ?
             ''', (id,))
+            text_widget.insert(tk.END, format_item(result)+"\n")
             text_widget.insert(tk.END, "Establishment deleted successfully.\n")
     else:
         text_widget.insert(tk.END, "Establishment not found.\n")
@@ -117,10 +133,12 @@ def search_estab(cur, id, text_widget):
         SELECT * FROM food_establishment WHERE establishment_id = ?
     ''', (id,))
     result = cur.fetchone()
+    text_widget.delete(1.0, tk.END)
+
     if result:
         text_widget.insert(tk.END, format_item(result))
     else:
-        text_widget.insert(tk.END, "Establishment not found.\n")
+        text_widget.insert(tk.END, "\nEstablishment not found.\n")
 
 # Main food establishments menu
 def estab_menu(cur):

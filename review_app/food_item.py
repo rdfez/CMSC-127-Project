@@ -37,7 +37,7 @@ def view_items(cur, establishment_id, food_type, sort, text_widget):
         for item in items:
             text_widget.insert(tk.END, format_item(item))
     else:
-        text_widget.insert(tk.END, "No food items found for this establishment.\n")
+        text_widget.insert(tk.END, "\nNo food items found for this establishment.\n")
 
 # Searches for an item from any establishment based on filter/sort
 # - Parameters:
@@ -63,7 +63,7 @@ def search_item_establishment(cur, choice, price_min, price_max, food_type, text
         for item in items:
             text_widget.insert(tk.END, format_item(item))
     else:
-        text_widget.insert(tk.END, "No food items found for this establishment.\n")
+        text_widget.insert(tk.END, "\nNo food items found for this establishment.\n")
 
 # Add a food item
 # - Parameters:
@@ -77,10 +77,16 @@ def search_item_establishment(cur, choice, price_min, price_max, food_type, text
 #       2.6. food_manager_id
 #   3. text_widget
 def add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget):
+    text_widget.delete(1.0, tk.END)
     try:
         cur.execute("INSERT INTO food_item (item_id, food_name, price, type, establishment_id, manager_id) VALUES (?, ?, ?, ?, ?, ?)", 
                     (food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id))
+
+        cur.execute('SELECT * FROM food_item WHERE item_id = ?', (food_item_id,))
+        item = cur.fetchone()
+        text_widget.insert(tk.END, format_item(item))
         text_widget.insert(tk.END, "Food item added successfully.\n")
+
     except mariadb.Error as e:
         text_widget.insert(tk.END, f"Error: {e}\n")
 
@@ -101,9 +107,13 @@ def update_item(cur, item_id, text_widget):
         new_type = simpledialog.askstring("Input", "Updated Type:")
         cur.execute("UPDATE food_item SET food_name = ?, price = ?, type = ? WHERE item_id = ?", 
                     (new_name, new_price, new_type, item_id))
-        text_widget.insert(tk.END, "Food item updated successfully.\n")
+        
+        cur.execute('SELECT * FROM food_item WHERE item_id = ?', (item_id,))
+        updated_item = cur.fetchone()
+        text_widget.insert(tk.END, format_item(updated_item))
+        text_widget.insert(tk.END, "\nFood item updated successfully.\n")
     else:
-        text_widget.insert(tk.END, "Food item not found.\n")
+        text_widget.insert(tk.END, "\nFood item not found.\n")
 
 # Delete a food item
 # - Parameters:
@@ -117,9 +127,10 @@ def delete_item(cur, item_id, text_widget):
 
     if item:
         cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
-        text_widget.insert(tk.END, "Food item deleted successfully.\n")
+        text_widget.insert(tk.END, format_item(item))
+        text_widget.insert(tk.END, "\nFood item deleted successfully.\n")
     else:
-        text_widget.insert(tk.END, "Food item not found.\n")
+        text_widget.insert(tk.END, "\nFood item not found.\n")
 
 #Search for a food item based on item ID
 # - Parameters:
@@ -134,7 +145,7 @@ def search_item(cur, item_id, text_widget):
     if item:
         text_widget.insert(tk.END, format_item(item))
     else:
-        text_widget.insert(tk.END, "Food item not found.\n")
+        text_widget.insert(tk.END, "\nFood item not found.\n")
 
 # Main food item menu
 def item_menu(cur):
@@ -182,7 +193,7 @@ def item_menu(cur):
                 # Proceed to ask for other details
                 food_name = simpledialog.askstring("Input", "Enter Food Name:")
                 food_price = int(simpledialog.askstring("Input", "Enter Price:"))
-                food_type = simpledialog.askstring("Input", "Enter Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
+                food_type = simpledialog.askstring("Input", "Enter Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NULL]:")
                 food_establishment_id = int(simpledialog.askstring("Input", "Enter Establishment ID:"))
                 food_manager_id = int(simpledialog.askstring("Input", "Enter Manager ID:"))
                 add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget)

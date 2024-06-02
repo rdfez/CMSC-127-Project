@@ -1,5 +1,6 @@
 import mariadb
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox, simpledialog
 
 from food_establishment import estab_menu
@@ -139,6 +140,15 @@ class ReviewApp:
 # Initializis tkinter and necessary connections
 if __name__ == "__main__":
     root = tk.Tk()
+
+    # Pack a big frame so, it behaves like the window background
+    big_frame = ttk.Frame(root)
+    big_frame.pack(fill="both", expand=True)
+    
+    # Set the initial theme
+    root.tk.call("source", "Azure-ttk-theme/azure.tcl")
+    root.tk.call("set_theme", "dark")
+
     init()
     app = ReviewApp(root)
     root.mainloop()
