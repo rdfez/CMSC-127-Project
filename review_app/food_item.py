@@ -2,6 +2,7 @@ import mariadb
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 
+# Format a given item to be outputted 
 def format_item(item):
     return (
         f"==============================\n"
@@ -14,6 +15,13 @@ def format_item(item):
         f"==============================\n"
     )
 
+# View food items
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. establishment_id (int): input for establishment_id
+#   3. food_type
+#   4. sort
+#   5. text_widget
 def view_items(cur, establishment_id, food_type, sort, text_widget):
     if food_type == 'NA':
         cur.execute("SELECT * FROM food_item WHERE establishment_id = ? ORDER BY price " + sort, (establishment_id,))
@@ -22,6 +30,7 @@ def view_items(cur, establishment_id, food_type, sort, text_widget):
 
     items = cur.fetchall()
     text_widget.delete(1.0, tk.END)
+    text_widget.insert(tk.END, f"Number of food items found: {len(items)}\n")
     
     if items:
         text_widget.insert(tk.END, "Food Items:\n")
@@ -30,6 +39,14 @@ def view_items(cur, establishment_id, food_type, sort, text_widget):
     else:
         text_widget.insert(tk.END, "No food items found for this establishment.\n")
 
+# Searches for an item from any establishment based on filter/sort
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. choice (int): determines the filter (minimum & maximum price) / sort (DESC/ASC)
+#       2.1. price_min (int)
+#       2.2. price_max (int)
+#       3.3. food_type (string)
+#   3. text_widget
 def search_item_establishment(cur, choice, price_min, price_max, food_type, text_widget):
     if choice == 1:
         cur.execute("SELECT * FROM food_item WHERE price >= ? AND price <= ?", (price_min, price_max))
@@ -48,6 +65,17 @@ def search_item_establishment(cur, choice, price_min, price_max, food_type, text
     else:
         text_widget.insert(tk.END, "No food items found for this establishment.\n")
 
+# Add a food item
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. Details when adding new item
+#       2.1. food_item_id
+#       2.2. food_name
+#       2.3. food_price
+#       2.4. food_type
+#       2.5. food_establishment_id
+#       2.6. food_manager_id
+#   3. text_widget
 def add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget):
     try:
         cur.execute("INSERT INTO food_item (item_id, food_name, price, type, establishment_id, manager_id) VALUES (?, ?, ?, ?, ?, ?)", 
@@ -56,18 +84,32 @@ def add_item(cur, food_item_id, food_name, food_price, food_type, food_establish
     except mariadb.Error as e:
         text_widget.insert(tk.END, f"Error: {e}\n")
 
-def update_item(cur, item_id, new_name, new_price, new_type, text_widget):
+# Update a food item
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. item_id (int): inputted item_id to be updated from food item
+#   3. text_widget
+def update_item(cur, item_id, text_widget):
     cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
     item = cur.fetchone()
     text_widget.delete(1.0, tk.END)
 
     if item:
+        text_widget.insert(tk.END, format_item(item))
+        new_name = simpledialog.askstring("Input", "Updated Name:")
+        new_price = int(simpledialog.askstring("Input", "Updated Price:"))
+        new_type = simpledialog.askstring("Input", "Updated Type:")
         cur.execute("UPDATE food_item SET food_name = ?, price = ?, type = ? WHERE item_id = ?", 
                     (new_name, new_price, new_type, item_id))
         text_widget.insert(tk.END, "Food item updated successfully.\n")
     else:
         text_widget.insert(tk.END, "Food item not found.\n")
 
+# Delete a food item
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. item_id (int): inputted item_id to be deleted from food item
+#   3. text_widget
 def delete_item(cur, item_id, text_widget):
     cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
     item = cur.fetchone()
@@ -79,6 +121,11 @@ def delete_item(cur, item_id, text_widget):
     else:
         text_widget.insert(tk.END, "Food item not found.\n")
 
+#Search for a food item based on item ID
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. item_id (int): inputted item_id to search for a food item
+#   3. text_widget
 def search_item(cur, item_id, text_widget):
     cur.execute("SELECT * FROM food_item WHERE item_id = ?", (item_id,))
     item = cur.fetchone()
@@ -89,6 +136,7 @@ def search_item(cur, item_id, text_widget):
     else:
         text_widget.insert(tk.END, "Food item not found.\n")
 
+# Main food item menu
 def item_menu(cur):
     def view_all_ui():
         try:
@@ -146,10 +194,7 @@ def item_menu(cur):
     def update_item_ui():
         try:
             item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
-            new_name = simpledialog.askstring("Input", "Updated Name:")
-            new_price = int(simpledialog.askstring("Input", "Updated Price:"))
-            new_type = simpledialog.askstring("Input", "Updated Type:")
-            update_item(cur, item_id, new_name, new_price, new_type, text_widget)
+            update_item(cur, item_id, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
         except TypeError:

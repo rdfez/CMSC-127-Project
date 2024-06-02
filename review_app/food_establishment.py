@@ -2,6 +2,7 @@ import mariadb
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 
+# Format a given item to be outputted 
 def format_item(item):
     return (
         f"==============================\n"
@@ -13,9 +14,17 @@ def format_item(item):
         f"==============================\n"
     )
 
+# View food establishments
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. choice (int): input to determine if all food establishments are fetched or highly rated food establishments
+#   3. text_widget
 def view_estab(cur, choice, text_widget):
+    # View all food establishments
     if choice == 1:
         cur.execute("SELECT * FROM food_establishment")
+
+    #View all highly rated food establishments (rating >= 4)
     elif choice == 2:
         cur.execute("SELECT * FROM food_establishment WHERE establishment_rating >= 4")
 
@@ -29,6 +38,15 @@ def view_estab(cur, choice, text_widget):
     else:
         text_widget.insert(tk.END, "No establishments found for the given criteria.\n")
 
+# Add a food establishment
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. Details when adding new food establishment
+#       2.1. estab_id (int): 
+#       2.2. estab_name (string):
+#       2.3. loc (string):
+#       2.4. estab_manager_id (int):
+#   3. text_widget
 def add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget):
     try:
         cur.execute('''
@@ -39,6 +57,11 @@ def add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget):
     except mariadb.Error as e:
         text_widget.insert(tk.END, f"Error: {e}\n")
 
+# Update a food establishment
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. id (int): inputtted establishment_id to be updated from 
+#   3. text_widget
 def edit_estab(cur, id, text_widget):
     cur.execute('''
         SELECT * FROM food_establishment WHERE establishment_id = ?
@@ -58,6 +81,11 @@ def edit_estab(cur, id, text_widget):
     else:
         text_widget.insert(tk.END, "Establishment not found.\n")
 
+# Delete a food establishment
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. id (int): inputted establishment_id to be deleted from food establishment
+#   3. text_widget
 def delete_estab(cur, id, text_widget):
     cur.execute('''
         SELECT * FROM food_establishment WHERE establishment_id = ?
@@ -79,6 +107,11 @@ def delete_estab(cur, id, text_widget):
     else:
         text_widget.insert(tk.END, "Establishment not found.\n")
 
+# Search a food establishment
+# - Parameters:
+#   1. cursor (cursor): mariaDB cursor 
+#   2. id (int): inputted establishment_id to search for a food establishment
+#   3. text_widget
 def search_estab(cur, id, text_widget):
     cur.execute('''
         SELECT * FROM food_establishment WHERE establishment_id = ?
@@ -89,6 +122,7 @@ def search_estab(cur, id, text_widget):
     else:
         text_widget.insert(tk.END, "Establishment not found.\n")
 
+# Main food establishments menu
 def estab_menu(cur):
     def view_all():
         view_estab(cur, 1, text_widget)

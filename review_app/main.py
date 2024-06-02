@@ -11,6 +11,7 @@ def init():
     # Connect to MariaDB Platform
     conn_bool = True
     while conn_bool:
+        # prompt for MariaDB password
         mariadb_password = simpledialog.askstring("Password", "Enter password:", show='*')
 
         try:
@@ -109,6 +110,7 @@ class ReviewApp:
         self.root.title("Review Information System")
         self.main_menu()
 
+    # Displays Main Menu options 
     def main_menu(self):
         self.clear()
         tk.Label(self.root, text="Main Menu", font=("Arial", 16)).pack(pady=10)
@@ -122,15 +124,19 @@ class ReviewApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
+    # Display Food Establishment menu
     def food_establishments(self):
         estab_menu(cur)
 
+    # Display Food Iems menu
     def food_items(self):
         item_menu(cur)
 
+    # Display Reviews menu
     def reviews(self):
         review_menu(cur)
 
+# Initializis tkinter and necessary connections
 if __name__ == "__main__":
     root = tk.Tk()
     init()
