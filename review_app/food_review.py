@@ -3,7 +3,8 @@ from datetime import datetime
 import os
 import tkinter as tk
 from tkinter import messagebox, simpledialog
-import mariadb
+import food_establishment as estab
+import food_item as item
 import tkinter.messagebox as tkMessageBox
 from tkinter.scrolledtext import ScrolledText
 from tkinter.simpledialog import Dialog
@@ -77,7 +78,7 @@ def add_review(cur, text_widget):
         return
 
     # Add menu
-    type_input = get_user_input("Please select one you would like to create a review for:\n[1] Food Establishment\n[2] Food Item\n[0] Cancel", "int", 0, 2)
+    type_input = get_user_input("Please select one you would like to create a review for:\n[1] Food Establishment\n[2] Food Item", "int", 1, 2)
     # Declare type based on user input
     if (type_input == 1):
         if (not(establishment_total > 0)):
@@ -153,14 +154,27 @@ def update_review(cur, text_widget):
 
     # Return if there are no reviews
     if (not(review_total > 0)):
+        show_message("There are currently no reviews.")
         return
 
     review_id = get_id("Enter the ID of review to be updated: ", "food_review", None, None, cur)
+    if review_id == None: return
+    
     view_a_review(cur, review_id, text_widget)
 
+    cur.execute("SELECT item_id FROM food_review where review_id = ?", (review_id,))
+    item_id = cur.fetchone()[0]
+        
     # Update menu
-    choice = get_user_input("Update:\n[1] Rating\n[2] Food Establishment\n[3] Food Item\n[0] Cancel", "int", 0, 3)
-
+    if item_id:
+        choice = get_user_input("Update:\n[1] Rating\n[2] Food Item", "int", 1, 2)
+        if choice == 2: choice = 3
+    else: 
+        choice = get_user_input("Update:\n[1] Rating\n[2] Food Establishment", "int", 1, 2)
+    # If user cancels
+    if choice == None:
+        return
+    
     if choice == 1:
         attribute = "rating"
         value = get_user_input("Enter new rating (from 1 to 5): ", "int", 1, 5)
@@ -169,15 +183,23 @@ def update_review(cur, text_widget):
         value = get_id("Enter new establishment ID: ", "food_establishment", None, None, cur)
     elif choice == 3:
         attribute = "item_id"
-        value = get_id("Enter new food item ID: ", "food_item", "Just remove food item? (y/n)", True, cur)
+        value = get_id("Enter new food item ID: ", "food_item", "Just remove food item? (y/n)", None, cur)
+        cur.execute("SELECT establishment_id FROM food_item where item_id = ?", (value,))
+        estab_id = cur.fetchone()[0]
     elif choice == 0:
         return
     else:
         show_message("Invalid choice!")
         return
 
+    if value == None: 
+        return
+    
     # Update chosen field
-    cur.execute(f"UPDATE food_review SET {attribute} = ? WHERE review_id = ?;", (value, review_id))
+    if attribute == "item_id":
+      cur.execute(f"UPDATE food_review SET {attribute} = ?, establishment_id = ? WHERE review_id = ?;", (value, estab_id, review_id))
+    else:
+      cur.execute(f"UPDATE food_review SET {attribute} = ? WHERE review_id = ?;", (value, review_id))
 
     # Update establishment ratings
     cur.execute("UPDATE food_establishment e SET establishment_rating = (SELECT TRUNCATE(SUM(rating)/COUNT(rating),1) FROM food_review r WHERE r.establishment_id = e.establishment_id);")
@@ -194,6 +216,7 @@ def delete_review(cur, text_widget):
 
     # Return if there are no reviews
     if (not(review_total > 0)):
+        show_message("There are currently no reviews.")
         return
 
     review_id = get_id("Enter the ID of the review to be deleted: ", "food_review", None, None, cur)
@@ -288,7 +311,7 @@ def view_reviews(cur, type_input, text_widget):
         return
 
     # Add menu
-    type_input = get_user_input("Please select one you would like to view the reviews for:\n[1] Food Establishment\n[2] Food Item\n[0] Cancel", "int", 0, 2)
+    type_input = get_user_input("Please select one you would like to view the reviews for:\n[1] Food Establishment\n[2] Food Item", "int", 1, 2)
     # Declare type based on user input
     if (type_input == 1):
         if (not(establishment_total > 0)):
@@ -420,11 +443,11 @@ def validate_id(cur, entity, id):
     cur.execute(f"SELECT COUNT(*) FROM {entity} WHERE {id_label} = ?", (id,))
     return cur.fetchone()[0]
 
-def get_id(prompt, entity, condition=None, is_optional=None, cur=None):
-    if is_optional:
-        use_existing = get_user_input(f"{prompt} \n (Leave blank to skip)", "bool")
-        if not use_existing:
-            return None
+def get_id(prompt, entity, optional_message, is_optional=None, cur=None):
+    # if is_optional:
+    #     use_existing = get_user_input(f"{prompt} \n (Leave blank to skip)", "bool")
+    #     if not use_existing:
+    #         return None
     while True:
         id = get_user_input(prompt, "int")
         if validate_id(cur, entity, id) > 0:
