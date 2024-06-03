@@ -5,9 +5,33 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 import mariadb
 import tkinter.messagebox as tkMessageBox
+from tkinter.scrolledtext import ScrolledText
+from tkinter.simpledialog import Dialog
 
 def show_message(message):
     messagebox.showinfo("Information", message)
+
+def format_item(item, type):
+    if type == "establishment":
+      return (
+          f"==============================\n"
+          f"Establishment ID: {item[0]}\n"
+          f"Establishment Name: {item[1]}\n"
+          f"Establishment Rating: {item[2]}\n"
+          f"Location: {item[3]}\n"
+          f"Manager ID: {item[4]}\n"
+          f"==============================\n"
+      )
+    elif type == "food":
+      return (
+          f"==============================\n"
+          f"Establishment ID: {item[0]}\n"
+          f"Establishment Name: {item[1]}\n"
+          f"Establishment Rating: {item[2]}\n"
+          f"Location: {item[3]}\n"
+          f"Manager ID: {item[4]}\n"
+          f"==============================\n"
+      )
 
 # Helper function to get user input through a dialog
 def get_user_input(prompt, input_type="string", min_val=None, max_val=None, options=None):
@@ -41,7 +65,7 @@ def get_user_input(prompt, input_type="string", min_val=None, max_val=None, opti
             return value
         
 # Add a review
-def add_review(cur):
+def add_review(cur, text_widget):
     # Get total number of establishments
     establishment_total = count(cur, "food_establishment", False)
     # Get total number of items
@@ -71,7 +95,7 @@ def add_review(cur):
         return
 
     # Get total number of reviews
-    review_total = count(cur, "food_review", False)
+    review_total = max(cur, "food_review", False)
 
     new_review_id = review_total+1
 
@@ -109,11 +133,7 @@ def add_review(cur):
     user_id = get_id("Enter the user ID: ", "user", None, None, cur)
 
     # Date
-    use_today = messagebox.askyesno("Input", "Use date today for review date?")
-    if use_today:
-        date = datetime.today().strftime('%Y-%m-%d')
-    else:
-        date = get_user_input("Enter review date (YYYY-MM-DD): ", "date")
+    date = datetime.today().strftime('%Y-%m-%d')
 
     # Insert new review
     cur.execute("INSERT INTO food_review VALUES (?, ?, ?, ?, ?, ?);", (new_review_id, rating, date, establishment_id, item_id, user_id))
@@ -122,20 +142,21 @@ def add_review(cur):
     cur.execute("UPDATE food_establishment e SET establishment_rating = (SELECT TRUNCATE(SUM(rating)/COUNT(rating),1) FROM food_review r WHERE r.establishment_id = e.establishment_id);")
 
     show_message("Review added successfully!")
+    view_a_review(cur, new_review_id, text_widget)
 
 # Update a review
-def update_review(cur):
+def update_review(cur, text_widget):
     # Get total number of reviews
     review_total = count(cur, "food_review", False)
     # Display all reviews
-    view_all_reviews(cur)
+    view_all_reviews(cur, text_widget)
 
     # Return if there are no reviews
     if (not(review_total > 0)):
         return
 
     review_id = get_id("Enter the ID of review to be updated: ", "food_review", None, None, cur)
-    show_message(f"Review Info: {view_a_review(cur, review_id)}")
+    view_a_review(cur, review_id, text_widget)
 
     # Update menu
     choice = get_user_input("Update:\n[1] Rating\n[2] Food Establishment\n[3] Food Item\n[0] Cancel", "int", 0, 3)
@@ -162,13 +183,14 @@ def update_review(cur):
     cur.execute("UPDATE food_establishment e SET establishment_rating = (SELECT TRUNCATE(SUM(rating)/COUNT(rating),1) FROM food_review r WHERE r.establishment_id = e.establishment_id);")
 
     show_message(f"Review's {attribute} was successfully updated!")
+    view_a_review(cur, review_id, text_widget)
 
 # Delete a review
-def delete_review(cur):
+def delete_review(cur, text_widget):
     # Get total number of reviews
     review_total = count(cur, "food_review", False)
     # Display all reviews
-    view_all_reviews(cur)
+    view_all_reviews(cur, text_widget)
 
     # Return if there are no reviews
     if (not(review_total > 0)):
@@ -181,10 +203,13 @@ def delete_review(cur):
     # Delete review
     cur.execute("DELETE FROM food_review WHERE review_id = ?", (review_id,))
 
-    show_message("Review deleted.")
+    if review_id: 
+        show_message("Review deleted.")
+    
+    text_widget.delete(1.0, tk.END)
 
 # View all reviews
-def view_all_reviews(cur):
+def view_all_reviews(cur, text_widget):
     cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review")
 
     # Fetch all results
@@ -194,7 +219,9 @@ def view_all_reviews(cur):
     if (len(reviews) == 0):
         show_message("There are no reviews!")
     else:
-        reviews_text = "\n=============================="
+        reviews_text = f"Number of reviews: {len(reviews)}"
+        reviews_text += "\nReview List:"
+        reviews_text += "\n=============================="
         for (review_id, rating, date, establishment_id, item_id, user_id) in reviews:
             # User name
             cur.execute("SELECT username FROM user WHERE user_id = ?", (user_id,))
@@ -213,17 +240,19 @@ def view_all_reviews(cur):
             else:
                 # Print w/o food
                 reviews_text += f"\n[Review ID: {review_id}]\nUser: {username}\nRating: {rating}/5 \t Date: {date}\nEstablishment: \t\"{establishment_name}\"\n=============================="
-        show_message(reviews_text)
+        
+    text_widget.delete(1.0, tk.END)
+    text_widget.insert(tk.END, reviews_text)
 
 # View a specific review
-def view_a_review(cur, id):
+def view_a_review(cur, id, text_widget):
     cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE review_id = ?", (id,))
 
     # Fetch all results
     review = cur.fetchall()
 
     # Print the review
-    review_text = "\n=============================="
+    review_text = "=============================="
     for (review_id, rating, date, establishment_id, item_id, user_id) in review:
         # User name
         cur.execute("SELECT username FROM user WHERE user_id = ?", (user_id,))
@@ -242,10 +271,12 @@ def view_a_review(cur, id):
         else:
             # Print w/o food
             review_text += f"\n[Review ID: {review_id}]\nUser: {username}\nRating: {rating}/5 \t Date: {date}\nEstablishment: \t\"{establishment_name}\"\n=============================="
-    return review_text
+    
+    text_widget.delete(1.0, tk.END)
+    text_widget.insert(tk.END, review_text)
 
 # View reviews for a food item or establishment
-def view_reviews(cur):
+def view_reviews(cur, type_input, text_widget):
     # Get total number of establishments
     establishment_total = count(cur, "food_establishment", False)
     # Get total number of items
@@ -279,27 +310,14 @@ def view_reviews(cur):
 
     # Get user input for bool for recent reviews
     is_recent = get_user_input("View only recent reviews? (y/n): ", "bool")
-    
-    # Get establishment ID
-    establishment_id = get_id(f"Enter the establishment ID: ", "food_establishment", None, None, cur)
-    # Check if establishment ID exists
-    if establishment_id is None:
-        return
+    # Get entity id
+    id = get_id(f"Enter the {type} ID: ", type, None, None, cur)
 
-    # Get the establishment name
-    cur.execute("SELECT establishment_name FROM food_establishment WHERE establishment_id = ?", (establishment_id,))
-    establishment_name_result = cur.fetchone()
-    # Check if establishment exists
-    if establishment_name_result is None:
-        show_message("Food Establishment not found in the database!")
-        return
-    establishment_name = establishment_name_result[0]
-
-    # Get all reviews for chosen establishment ID
+    # Get all reviews for chosen type and id
     if (is_recent):
-        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE establishment_id = ? AND DATEDIFF(NOW(), date) <= 30", (establishment_id,))
+        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {id_type}_id = ? AND DATEDIFF(NOW(), date) <= 30", (id,))
     else:
-        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE establishment_id = ?", (establishment_id,))
+        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {id_type}_id = ?", (id,))
 
     # Fetch all results
     reviews = cur.fetchall()
@@ -307,64 +325,72 @@ def view_reviews(cur):
     # Prompt for no review
     if (len(reviews) == 0):
         if (is_recent):
-            show_message(f"There are no recent reviews for {establishment_name}!")
+            show_message(f"There are no recent reviews for that food {id_type}!")
         else:
-            show_message(f"There are no reviews for {establishment_name}!")
+            show_message(f"There are no reviews for that food {id_type}!")
     else:
-        reviews_text = "\n=============================="
+        reviews_text = f"Number of reviews: {len(reviews)}"
+        reviews_text += "\nReview List:"
+        reviews_text += "\n=============================="
         for (review_id, rating, date, establishment_id, item_id, user_id) in reviews:
             # User name
             cur.execute("SELECT username FROM user WHERE user_id = ?", (user_id,))
-            username_result = cur.fetchone()
-            if username_result:
-                username = username_result[0]
-            else:
-                username = "Unknown"
+            username = cur.fetchone()[0]
+
+            # Establishment name
+            cur.execute("SELECT establishment_name FROM food_establishment WHERE establishment_id = ?", (establishment_id,))
+            establishment_name = cur.fetchone()[0]
 
             if (type == "food_item"):
                 # Food name
                 cur.execute("SELECT food_name FROM food_item WHERE item_id = ?", (item_id,))
-                food_name_result = cur.fetchone()
-                if food_name_result:
-                    food_name = food_name_result[0]
-                else:
-                    food_name = "Unknown"
+                food_name = cur.fetchone()[0]
                 # Print w/ food
                 reviews_text += f"\n[Review ID: {review_id}]\nUser: {username}\nRating: {rating}/5 \tDate: {date}\nEstablishment: \t\"{establishment_name}\"\nFood Name: \t\"{food_name}\"\n=============================="
             else:
                 # Print w/o food
                 reviews_text += f"\n[Review ID: {review_id}]\nUser: {username}\nRating: {rating}/5 \t Date: {date}\nEstablishment: \t\"{establishment_name}\"\n=============================="
-        show_message(reviews_text)
+        text_widget.delete(1.0, tk.END)
+        text_widget.insert(tk.END, reviews_text)
 
 # Menu for reviews
 def review_menu(cur):
-    def on_closing():
-        if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            root.destroy()
-
-    root = tk.Tk()
+    global root
+    root = tk.Toplevel()
     root.title("Review Menu")
-    root.protocol("WM_DELETE_WINDOW", on_closing)
+    # root.protocol("WM_DELETE_WINDOW", on_closing)
 
-    def view_reviews_callback():
-        view_reviews(cur)
+    def view_all_reviews_callback():
+        view_all_reviews(cur, text_widget)
+
+    def view_estab_reviews_callback():
+        view_reviews(cur, 1, text_widget)
+
+    def view_item_reviews_callback():
+        view_reviews(cur, 2, text_widget)
 
     def add_review_callback():
-        add_review(cur)
+        add_review(cur, text_widget)
 
     def update_review_callback():
-        update_review(cur)
+        update_review(cur, text_widget)
 
     def delete_review_callback():
-        delete_review(cur)
+        delete_review(cur, text_widget)
 
     frame = tk.Frame(root)
     frame.pack(pady=20, padx=20)
 
-    tk.Button(frame, text="View Reviews for a Food Establishment or Item", command=view_reviews_callback).pack(pady=5)
+    tk.Button(frame, text="View All Reviews", command=view_all_reviews_callback).pack(pady=5)
+    tk.Button(frame, text="View Reviews for a Food Establishment", command=view_estab_reviews_callback).pack(pady=5)
+    tk.Button(frame, text="View Reviews for a Food Item", command=view_item_reviews_callback).pack(pady=5)
     tk.Button(frame, text="Add a Review", command=add_review_callback).pack(pady=5)
     tk.Button(frame, text="Edit a Review", command=update_review_callback).pack(pady=5)
     tk.Button(frame, text="Delete a Review", command=delete_review_callback).pack(pady=5)
+
+    text_widget = ScrolledText(frame, wrap=tk.WORD, height=10)
+    text_widget.pack(fill=tk.BOTH, padx=20, pady=10)
+
     tk.Button(frame, text="Back to Menu", command=root.destroy).pack(pady=5)
 
     root.mainloop()
@@ -377,8 +403,21 @@ def count(cur, entity, condition=None):
         cur.execute(f"SELECT COUNT(*) FROM {entity}")
     return cur.fetchone()[0]
 
+def max(cur, entity, condition=None):
+    if condition:
+        cur.execute(f"SELECT MAX(review_id) FROM {entity} WHERE {condition}")
+    else:
+        cur.execute(f"SELECT MAX(review_id) FROM {entity}")
+    return cur.fetchone()[0]
+
 def validate_id(cur, entity, id):
-    cur.execute(f"SELECT COUNT(*) FROM {entity} WHERE {id} = ?", (id,))
+    if entity == "user":
+      id_label = "user_id"
+    else:
+      # if food_<entity>, split and take entity and add id to form <entity>_id
+      id_label = entity.split("_")[1] + "_id"
+
+    cur.execute(f"SELECT COUNT(*) FROM {entity} WHERE {id_label} = ?", (id,))
     return cur.fetchone()[0]
 
 def get_id(prompt, entity, condition=None, is_optional=None, cur=None):
@@ -390,5 +429,7 @@ def get_id(prompt, entity, condition=None, is_optional=None, cur=None):
         id = get_user_input(prompt, "int")
         if validate_id(cur, entity, id) > 0:
             return id
+        elif id == None:
+            return
         else:
             show_message(f"Invalid {entity} ID! Please try again.")
