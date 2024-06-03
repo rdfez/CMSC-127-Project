@@ -1,5 +1,6 @@
 import mariadb
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox, simpledialog
 
 # Format a given item to be outputted 
@@ -198,16 +199,16 @@ def estab_menu(cur):
     estab_window = tk.Toplevel()
     estab_window.title("Food Establishments")
 
-    tk.Label(estab_window, text="Food Establishments Menu", font=("Arial", 16)).pack(pady=10)
+    ttk.Label(estab_window, text="Food Establishments Menu", font=("Arial", 16)).pack(pady=10)
 
-    tk.Button(estab_window, text="View all food establishments", command=view_all).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(estab_window, text="View Highest-rated Food establishments", command=view_high_rated).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(estab_window, text="Add a food establishment", command=add_estab_ui).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(estab_window, text="Update a food establishment", command=edit_estab_ui).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(estab_window, text="Delete a food establishment", command=delete_estab_ui).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(estab_window, text="Search a food establishment", command=search_estab_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(estab_window, text="View all food establishments", command=view_all).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(estab_window, text="View Highest-rated Food establishments", command=view_high_rated).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(estab_window, text="Add a food establishment", command=add_estab_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(estab_window, text="Update a food establishment", command=edit_estab_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(estab_window, text="Delete a food establishment", command=delete_estab_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(estab_window, text="Search a food establishment", command=search_estab_ui).pack(fill=tk.X, padx=20, pady=5)
 
     text_widget = tk.Text(estab_window, wrap=tk.WORD, height=10)
     text_widget.pack(fill=tk.BOTH, padx=20, pady=10)
 
-    tk.Button(estab_window, text="Close", command=estab_window.destroy).pack(pady=10)
+    ttk.Button(estab_window, text="Close", command=estab_window.destroy).pack(pady=10)

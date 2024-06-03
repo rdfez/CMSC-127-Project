@@ -114,12 +114,12 @@ class ReviewApp:
     # Displays Main Menu options 
     def main_menu(self):
         self.clear()
-        tk.Label(self.root, text="Main Menu", font=("Arial", 16)).pack(pady=10)
+        ttk.Label(self.root, text="Main Menu", font=("Arial", 16)).pack(pady=10)
 
-        tk.Button(self.root, text="Food Establishments", command=self.food_establishments).pack(fill=tk.X, padx=20, pady=5)
-        tk.Button(self.root, text="Food Items", command=self.food_items).pack(fill=tk.X, padx=20, pady=5)
-        tk.Button(self.root, text="Reviews", command=self.reviews).pack(fill=tk.X, padx=20, pady=5)
-        tk.Button(self.root, text="Exit", command=self.root.quit).pack(fill=tk.X, padx=20, pady=5)
+        ttk.Button(self.root, text="Food Establishments", command=self.food_establishments).pack(fill=tk.X, padx=20, pady=5)
+        ttk.Button(self.root, text="Food Items", command=self.food_items).pack(fill=tk.X, padx=20, pady=5)
+        ttk.Button(self.root, text="Reviews", command=self.reviews).pack(fill=tk.X, padx=20, pady=5)
+        ttk.Button(self.root, text="Exit", command=self.root.quit).pack(fill=tk.X, padx=20, pady=5)
 
     def clear(self):
         for widget in self.root.winfo_children():
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     # Pack a big frame so, it behaves like the window background
     big_frame = ttk.Frame(root)
     big_frame.pack(fill="both", expand=True)
-    
+
     # Set the initial theme
     root.tk.call("source", "Azure-ttk-theme/azure.tcl")
     root.tk.call("set_theme", "dark")

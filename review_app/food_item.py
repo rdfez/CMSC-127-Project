@@ -1,5 +1,6 @@
 import mariadb
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox, simpledialog
 
 # Format a given item to be outputted 
@@ -232,16 +233,16 @@ def item_menu(cur):
     item_window = tk.Toplevel()
     item_window.title("Food Items")
 
-    tk.Label(item_window, text="Food Items Menu", font=("Arial", 16)).pack(pady=10)
+    ttk.Label(item_window, text="Food Items Menu", font=("Arial", 16)).pack(pady=10)
 
-    tk.Button(item_window, text="View all food items from a food establishment", command=view_all_ui).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(item_window, text="Search item from any establishment", command=search_item_establishment_ui).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(item_window, text="Add a food item", command=add_item_ui).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(item_window, text="Update a food item", command=update_item_ui).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(item_window, text="Delete a food item", command=delete_item_ui).pack(fill=tk.X, padx=20, pady=5)
-    tk.Button(item_window, text="Search a food item", command=search_item_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(item_window, text="View all food items from a food establishment", command=view_all_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(item_window, text="Search item from any establishment", command=search_item_establishment_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(item_window, text="Add a food item", command=add_item_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(item_window, text="Update a food item", command=update_item_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(item_window, text="Delete a food item", command=delete_item_ui).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(item_window, text="Search a food item", command=search_item_ui).pack(fill=tk.X, padx=20, pady=5)
 
     text_widget = tk.Text(item_window, wrap=tk.WORD, height=10)
     text_widget.pack(fill=tk.BOTH, padx=20, pady=10)
 
-    tk.Button(item_window, text="Close", command=item_window.destroy).pack(pady=10)
+    ttk.Button(item_window, text="Close", command=item_window.destroy).pack(pady=10)
