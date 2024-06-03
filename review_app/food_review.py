@@ -79,6 +79,8 @@ def add_review(cur, text_widget):
 
     # Add menu
     type_input = get_user_input("Please select one you would like to create a review for:\n[1] Food Establishment\n[2] Food Item", "int", 1, 2)
+    if type_input == None: return
+
     # Declare type based on user input
     if (type_input == 1):
         if (not(establishment_total > 0)):
@@ -95,9 +97,8 @@ def add_review(cur, text_widget):
     elif (type_input == 0):
         return
 
-    # Get total number of reviews
+    # Get id by incrementing highest review id number
     review_total = max(cur, "food_review", False)
-
     new_review_id = review_total+1
 
     # Entity id
@@ -129,9 +130,11 @@ def add_review(cur, text_widget):
 
     # Rating
     rating = get_user_input("Enter rating (from 1 to 5): ", "int", 1, 5)
+    if rating == None: return
 
     # User id
     user_id = get_id("Enter the user ID: ", "user", None, None, cur)
+    if user_id == None: return
 
     # Date
     date = datetime.today().strftime('%Y-%m-%d')
@@ -243,7 +246,6 @@ def view_all_reviews(cur, text_widget):
         show_message("There are no reviews!")
     else:
         reviews_text = f"Number of reviews: {len(reviews)}"
-        reviews_text += "\nReview List:"
         reviews_text += "\n=============================="
         for (review_id, rating, date, establishment_id, item_id, user_id) in reviews:
             # User name
@@ -378,7 +380,6 @@ def view_reviews(cur, type_input, text_widget):
 
 # Menu for reviews
 def review_menu(cur):
-    global root
     root = tk.Toplevel()
     root.title("Review Menu")
     # root.protocol("WM_DELETE_WINDOW", on_closing)
