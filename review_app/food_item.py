@@ -24,10 +24,14 @@ def format_item(item):
 #   4. sort
 #   5. text_widget
 def view_items(cur, establishment_id, food_type, sort, text_widget):
+    food_types = {'MEAT', 'VEG', 'PASTA', 'BEVERAGE', 'DESSERT', 'NULL'}
     if food_type == 'NA':
         cur.execute("SELECT * FROM food_item WHERE establishment_id = ? ORDER BY price " + sort, (establishment_id,))
-    else:
+    elif (food_type not in food_types) and (sort == 'ASC' or sort == 'DESC'):
         cur.execute("SELECT * FROM food_item WHERE establishment_id = ? AND type = ? ORDER BY price " + sort, (establishment_id, food_type))
+    else: 
+        text_widget.insert(tk.END, "\nInvalid Input.\n")
+        return
 
     items = cur.fetchall()
     text_widget.delete(1.0, tk.END)
@@ -49,10 +53,20 @@ def view_items(cur, establishment_id, food_type, sort, text_widget):
 #       3.3. food_type (string)
 #   3. text_widget
 def search_item_establishment(cur, choice, price_min, price_max, food_type, text_widget):
+    food_types = {'MEAT', 'VEG', 'PASTA', 'BEVERAGE', 'DESSERT', 'NULL', 'NA'}
+
+    if food_type:
+        if food_type not in food_types:
+            text_widget.insert(tk.END, "\nInvalid Food Type.\n")
+            return
+
     if choice == 1:
         cur.execute("SELECT * FROM food_item WHERE price >= ? AND price <= ?", (price_min, price_max))
     elif choice == 2:
-        cur.execute("SELECT * FROM food_item WHERE type = ?", (food_type,))
+        if food_type == 'NA':
+            cur.execute("SELECT * FROM food_item")
+        else:
+            cur.execute("SELECT * FROM food_item WHERE type = ?", (food_type,))
     elif choice == 3:
         cur.execute("SELECT * FROM food_item WHERE type = ? AND price >= ? AND price <= ?", (food_type, price_min, price_max))
 
@@ -79,6 +93,7 @@ def search_item_establishment(cur, choice, price_min, price_max, food_type, text
 #   3. text_widget
 def add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget):
     text_widget.delete(1.0, tk.END)
+
     try:
         cur.execute("INSERT INTO food_item (item_id, food_name, price, type, establishment_id, manager_id) VALUES (?, ?, ?, ?, ?, ?)", 
                     (food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id))
@@ -127,9 +142,17 @@ def delete_item(cur, item_id, text_widget):
     text_widget.delete(1.0, tk.END)
 
     if item:
-        cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
+        text_widget.insert(tk.END, "\nAre you sure you want to delete:")
         text_widget.insert(tk.END, format_item(item))
-        text_widget.insert(tk.END, "\nFood item deleted successfully.\n")
+        choice = simpledialog.askstring("Input", "Choice (Y/N):")
+
+        if choice == 'Y':
+            cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
+            text_widget.insert(tk.END, "\nFood item deleted successfully.\n")
+        else: 
+        
+            text_widget.insert(tk.END, "\nFood item deletion unsuccesful.\n")
+        
     else:
         text_widget.insert(tk.END, "\nFood item not found.\n")
 
