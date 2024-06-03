@@ -53,7 +53,7 @@ def view_items(cur, establishment_id, food_type, sort, text_widget):
 #       3.3. food_type (string)
 #   3. text_widget
 def search_item_establishment(cur, choice, price_min, price_max, food_type, text_widget):
-    food_types = {'MEAT', 'VEG', 'PASTA', 'BEVERAGE', 'DESSERT', 'NULL', 'NA'}
+    food_types = {'MEAT', 'VEG', 'PASTA', 'BEVERAGE', 'DESSERT', 'NA'}
 
     if food_type:
         if food_type not in food_types:
@@ -120,7 +120,14 @@ def update_item(cur, item_id, text_widget):
         text_widget.insert(tk.END, format_item(item))
         new_name = simpledialog.askstring("Input", "Updated Name:")
         new_price = int(simpledialog.askstring("Input", "Updated Price:"))
-        new_type = simpledialog.askstring("Input", "Updated Type:")
+        food_types = ["MEAT", "VEG", "PASTA", "BEVERAGE", "DESSERT"]
+        new_type = None
+        while new_type not in food_types:
+            new_type = simpledialog.askstring("Input", f"Update Type:").upper()
+            if new_type not in food_types:
+                messagebox.showerror("Error", f"Invalid type. Please enter one of the following: {food_types}")
+                
+
         cur.execute("UPDATE food_item SET food_name = ?, price = ?, type = ? WHERE item_id = ?", 
                     (new_name, new_price, new_type, item_id))
         
@@ -195,8 +202,8 @@ def item_menu(cur):
                 price_min = int(simpledialog.askstring("Input", "Enter Price Range Minimum:"))
                 price_max = int(simpledialog.askstring("Input", "Enter Price Range Maximum:"))
             if choice == 2 or choice == 3:
-                food_type = simpledialog.askstring("Input", "Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:")
-                food_type = food_type.upper()
+                food_type = simpledialog.askstring("Input", "Enter Food Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NA]:").upper()
+
             search_item_establishment(cur, choice, price_min, price_max, food_type, text_widget)
         except ValueError:
             messagebox.showerror("Error", "Invalid input. Please enter valid data.")
@@ -206,7 +213,7 @@ def item_menu(cur):
     def add_item_ui():
         try:
             food_item_id = int(simpledialog.askstring("Input", "Enter Item ID:"))
-            
+
             # Check if item ID already exists
             cur.execute("SELECT * FROM food_item WHERE item_id = ?", (food_item_id,))
             existing_item = cur.fetchone()
@@ -217,7 +224,15 @@ def item_menu(cur):
                 # Proceed to ask for other details
                 food_name = simpledialog.askstring("Input", "Enter Food Name:")
                 food_price = int(simpledialog.askstring("Input", "Enter Price:"))
-                food_type = simpledialog.askstring("Input", "Enter Type [MEAT/VEG/PASTA/BEVERAGE/DESSERT/NULL]:")
+                
+                # Use a dropdown menu for food type
+                food_types = ["MEAT", "VEG", "PASTA", "BEVERAGE", "DESSERT"]
+                food_type = None
+                while food_type not in food_types:
+                    food_type = simpledialog.askstring("Input", f"Enter Type {food_types}:").upper()
+                    if food_type not in food_types:
+                        messagebox.showerror("Error", f"Invalid type. Please enter one of the following: {food_types}")
+                
                 food_establishment_id = int(simpledialog.askstring("Input", "Enter Establishment ID:"))
                 food_manager_id = int(simpledialog.askstring("Input", "Enter Manager ID:"))
                 add_item(cur, food_item_id, food_name, food_price, food_type, food_establishment_id, food_manager_id, text_widget)
