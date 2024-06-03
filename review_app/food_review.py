@@ -261,14 +261,27 @@ def view_reviews(cur):
 
     # Get user input for bool for recent reviews
     is_recent = get_user_input("View only recent reviews? (y/n): ", "bool")
-    # Get entity id
-    id = get_id(f"Enter the {type} ID: ", type, None, None, cur)
+    
+    # Get establishment ID
+    establishment_id = get_id(f"Enter the establishment ID: ", "food_establishment", None, None, cur)
+    # Check if establishment ID exists
+    if establishment_id is None:
+        return
 
-    # Get all reviews for chosen type and id
+    # Get the establishment name
+    cur.execute("SELECT establishment_name FROM food_establishment WHERE establishment_id = ?", (establishment_id,))
+    establishment_name_result = cur.fetchone()
+    # Check if establishment exists
+    if establishment_name_result is None:
+        show_message("Food Establishment not found in the database!")
+        return
+    establishment_name = establishment_name_result[0]
+
+    # Get all reviews for chosen establishment ID
     if (is_recent):
-        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {id_type}_id = ? AND DATEDIFF(NOW(), date) <= 30", (id,))
+        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE establishment_id = ? AND DATEDIFF(NOW(), date) <= 30", (establishment_id,))
     else:
-        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE {id_type}_id = ?", (id,))
+        cur.execute(f"SELECT review_id, rating, date, establishment_id, item_id, user_id FROM food_review WHERE establishment_id = ?", (establishment_id,))
 
     # Fetch all results
     reviews = cur.fetchall()
@@ -276,31 +289,35 @@ def view_reviews(cur):
     # Prompt for no review
     if (len(reviews) == 0):
         if (is_recent):
-            show_message(f"There are no recent reviews for that food {id_type}!")
+            show_message(f"There are no recent reviews for {establishment_name}!")
         else:
-            show_message(f"There are no reviews for that food {id_type}!")
+            show_message(f"There are no reviews for {establishment_name}!")
     else:
         reviews_text = "\n=============================="
         for (review_id, rating, date, establishment_id, item_id, user_id) in reviews:
             # User name
             cur.execute("SELECT username FROM user WHERE user_id = ?", (user_id,))
-            username = cur.fetchone()[0]
-
-            # Establishment name
-            cur.execute("SELECT establishment_name FROM food_establishment WHERE establishment_id = ?", (establishment_id,))
-            establishment_name = cur.fetchone()[0]
+            username_result = cur.fetchone()
+            if username_result:
+                username = username_result[0]
+            else:
+                username = "Unknown"
 
             if (type == "food_item"):
                 # Food name
                 cur.execute("SELECT food_name FROM food_item WHERE item_id = ?", (item_id,))
-                food_name = cur.fetchone()[0]
+                food_name_result = cur.fetchone()
+                if food_name_result:
+                    food_name = food_name_result[0]
+                else:
+                    food_name = "Unknown"
                 # Print w/ food
                 reviews_text += f"\n[Review ID: {review_id}]\nUser: {username}\nRating: {rating}/5 \tDate: {date}\nEstablishment: \t\"{establishment_name}\"\nFood Name: \t\"{food_name}\"\n=============================="
             else:
                 # Print w/o food
                 reviews_text += f"\n[Review ID: {review_id}]\nUser: {username}\nRating: {rating}/5 \t Date: {date}\nEstablishment: \t\"{establishment_name}\"\n=============================="
         show_message(reviews_text)
-
+        
 # Menu for reviews
 def review_menu(cur):
     def on_closing():
