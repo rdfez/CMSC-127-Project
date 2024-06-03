@@ -310,8 +310,8 @@ def view_reviews(cur, type_input, text_widget):
         show_message("There are no food establishments or food items!")
         return
 
-    # Add menu
-    type_input = get_user_input("Please select one you would like to view the reviews for:\n[1] Food Establishment\n[2] Food Item", "int", 1, 2)
+    # # Add menu
+    # type_input = get_user_input("Please select one you would like to view the reviews for:\n[1] Food Establishment\n[2] Food Item", "int", 1, 2)
     # Declare type based on user input
     if (type_input == 1):
         if (not(establishment_total > 0)):
