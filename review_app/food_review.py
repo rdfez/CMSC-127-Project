@@ -78,11 +78,29 @@ def add_review(cur):
     # Entity id
     if (type == "food_establishment"):
         establishment_id = get_id("Enter the establishment ID: ", "food_establishment", None, None, cur)
-        item_id = None
+        if establishment_id is None:
+            return
+        item_id = None  # Set item_id to None for food establishment reviews
     elif (type == "food_item"):
         item_id = get_id("Enter the food item ID: ", "food_item", None, None, cur)
+        if item_id is None:
+            return
         cur.execute("SELECT establishment_id FROM food_item WHERE item_id = ?;", (item_id,))
-        establishment_id = cur.fetchone()[0]
+        establishment_info = cur.fetchone()
+        # Check if food item exists
+        if establishment_info is None:
+            show_message("Food Item not found in the database!")
+            return
+        establishment_id = establishment_info[0]
+
+    # Get the establishment name
+    cur.execute("SELECT establishment_name FROM food_establishment WHERE establishment_id = ?", (establishment_id,))
+    establishment_name_result = cur.fetchone()
+    # Check if establishment exists
+    if establishment_name_result is None:
+        show_message("Food Establishment not found in the database!")
+        return
+    establishment_name = establishment_name_result[0]
 
     # Rating
     rating = get_user_input("Enter rating (from 1 to 5): ", "int", 1, 5)
@@ -317,7 +335,7 @@ def view_reviews(cur):
                 # Print w/o food
                 reviews_text += f"\n[Review ID: {review_id}]\nUser: {username}\nRating: {rating}/5 \t Date: {date}\nEstablishment: \t\"{establishment_name}\"\n=============================="
         show_message(reviews_text)
-        
+
 # Menu for reviews
 def review_menu(cur):
     def on_closing():
