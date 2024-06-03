@@ -6,6 +6,7 @@ Table of Contents
 
 # References
 - [How to connect Python programs to MariaDB](https://mariadb.com/resources/blog/how-to-connect-python-programs-to-mariadb/)
+- [Azure Tkinker Theme](https://github.com/rdbende/Azure-ttk-theme)
 
 # Schemas
 1. User
