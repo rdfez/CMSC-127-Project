@@ -1,35 +1,36 @@
 import mariadb
-import os
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox, simpledialog
 
 from food_establishment import estab_menu
 from food_item import item_menu
 from food_review import review_menu
-
-from misc import get_input, get_id, clear
 
 # Initialize database/connection
 def init():
     # Connect to MariaDB Platform
     conn_bool = True
     while conn_bool:
-        mariadb_password = input("Enter password: ")
+        # prompt for MariaDB password
+        mariadb_password = simpledialog.askstring("Password", "Enter password:", show='*')
 
         try:
             conn = mariadb.connect(
-                user = "root",
-                password = mariadb_password,
-                host = "localhost",
-                autocommit = True
+                user="root",
+                password=mariadb_password,
+                host="localhost",
+                autocommit=True
             )
 
-            if(conn):
+            if conn:
                 conn_bool = False
 
         except mariadb.Error as e:
-            print(f"Error connecting to MariaDB Platform: {e}")
+            messagebox.showerror("Error", f"Error connecting to MariaDB Platform: {e}")
 
     # Get Cursor for DB functions
-    global cur 
+    global cur
     cur = conn.cursor()
 
     # Create database/tables on initial boot and use app database
@@ -103,28 +104,51 @@ def init():
         );
     ''')
 
-########################################################
+# Create the main application window
+class ReviewApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Review Information System")
+        self.main_menu()
 
-print("\nReview Information System")
-init()
+    # Displays Main Menu options 
+    def main_menu(self):
+        self.clear()
+        ttk.Label(self.root, text="Main Menu", font=("Arial", 16)).pack(pady=10)
 
-while True:
-  clear()
-  print("\n========== Main Menu =========\n")
-  print("[1] Food Establishments")
-  print("[2] Food Items")
-  print("[3] Reviews")
-  print("[0] Exit")
-  print("\n==============================")
-  choice = get_input("\nEnter Choice: ", "int", 0, 3, None, None)
+        ttk.Button(self.root, text="Food Establishments", command=self.food_establishments).pack(fill=tk.X, padx=20, pady=5)
+        ttk.Button(self.root, text="Food Items", command=self.food_items).pack(fill=tk.X, padx=20, pady=5)
+        ttk.Button(self.root, text="Reviews", command=self.reviews).pack(fill=tk.X, padx=20, pady=5)
+        ttk.Button(self.root, text="Exit", command=self.root.quit).pack(fill=tk.X, padx=20, pady=5)
 
-  if choice == 1:
-    clear()
-    estab_menu(cur)
-  elif choice == 2:
-    clear()
-    item_menu(cur)
-  elif choice == 3:
-    clear()
-    review_menu(cur)
-  elif choice == 0: break
+    def clear(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+    # Display Food Establishment menu
+    def food_establishments(self):
+        estab_menu(cur)
+
+    # Display Food Iems menu
+    def food_items(self):
+        item_menu(cur)
+
+    # Display Reviews menu
+    def reviews(self):
+        review_menu(cur)
+
+# Initializis tkinter and necessary connections
+if __name__ == "__main__":
+    root = tk.Tk()
+
+    # Pack a big frame so, it behaves like the window background
+    big_frame = ttk.Frame(root)
+    big_frame.pack(fill="both", expand=True)
+
+    # Set the initial theme
+    root.tk.call("source", "Azure-ttk-theme/azure.tcl")
+    root.tk.call("set_theme", "dark")
+
+    init()
+    app = ReviewApp(root)
+    root.mainloop()
