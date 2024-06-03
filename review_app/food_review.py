@@ -1,13 +1,11 @@
 from misc import count, get_id, get_input, validate_id
 from datetime import datetime
-import os
-import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox, simpledialog
-import food_establishment as estab
-import food_item as item
-import tkinter.messagebox as tkMessageBox
 from tkinter.scrolledtext import ScrolledText
-from tkinter.simpledialog import Dialog
+import tkinter as tk
+import tkinter.messagebox as tkMessageBox
+
 
 def show_message(message):
     messagebox.showinfo("Information", message)
@@ -405,22 +403,23 @@ def review_menu(cur):
     frame = tk.Frame(root)
     frame.pack(pady=20, padx=20)
 
-    tk.Button(frame, text="View All Reviews", command=view_all_reviews_callback).pack(pady=5)
-    tk.Button(frame, text="View Reviews for a Food Establishment", command=view_estab_reviews_callback).pack(pady=5)
-    tk.Button(frame, text="View Reviews for a Food Item", command=view_item_reviews_callback).pack(pady=5)
-    tk.Button(frame, text="Add a Review", command=add_review_callback).pack(pady=5)
-    tk.Button(frame, text="Edit a Review", command=update_review_callback).pack(pady=5)
-    tk.Button(frame, text="Delete a Review", command=delete_review_callback).pack(pady=5)
+    ttk.Button(frame, text="View All Reviews", command=view_all_reviews_callback).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(frame, text="View Reviews for a Food Establishment", command=view_estab_reviews_callback).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(frame, text="View Reviews for a Food Item", command=view_item_reviews_callback).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(frame, text="Add a Review", command=add_review_callback).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(frame, text="Edit a Review", command=update_review_callback).pack(fill=tk.X, padx=20, pady=5)
+    ttk.Button(frame, text="Delete a Review", command=delete_review_callback).pack(fill=tk.X, padx=20, pady=5)
 
     text_widget = ScrolledText(frame, wrap=tk.WORD, height=10)
     text_widget.pack(fill=tk.BOTH, padx=20, pady=10)
 
-    tk.Button(frame, text="Back to Menu", command=root.destroy).pack(pady=5)
+    ttk.Button(frame, text="Close", command=root.destroy).pack(pady=10)
 
     root.mainloop()
 
 # Utility functions
 def count(cur, entity, condition=None):
+    
     if condition:
         cur.execute(f"SELECT COUNT(*) FROM {entity} WHERE {condition}")
     else:
