@@ -51,6 +51,13 @@ def view_estab(cur, choice, text_widget):
 def add_estab(cur, estab_id, estab_name, loc, estab_manager_id, text_widget):
     text_widget.delete(1.0, tk.END)
     try:
+        cur.execute("SELECT * FROM user WHERE user_id = ? AND is_manager = 1", (estab_manager_id,))
+        manager_exists = cur.fetchone()
+
+        if not manager_exists:
+            text_widget.insert(tk.END, "Error: Manager ID does not exist.\n")
+            return
+        
         cur.execute('''
             INSERT INTO food_establishment (establishment_id, establishment_name, establishment_rating, location, manager_id)
             VALUES (?, ?, ?, ?, ?)
