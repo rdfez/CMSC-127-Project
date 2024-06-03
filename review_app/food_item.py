@@ -151,15 +151,17 @@ def delete_item(cur, item_id, text_widget):
     if item:
         text_widget.insert(tk.END, "\nAre you sure you want to delete:")
         text_widget.insert(tk.END, format_item(item))
-        choice = simpledialog.askstring("Input", "Choice (Y/N):")
+        choice = simpledialog.askstring("Input", "Choice (Y/N):").upper()
 
         if choice == 'Y':
             cur.execute("DELETE FROM food_item WHERE item_id = ?", (item_id,))
             text_widget.insert(tk.END, "\nFood item deleted successfully.\n")
-        else: 
+        elif choice == 'N': 
         
             text_widget.insert(tk.END, "\nFood item deletion unsuccesful.\n")
-        
+        else:
+            text_widget.insert(tk.END, "\nOption not Allowed.\n")
+
     else:
         text_widget.insert(tk.END, "\nFood item not found.\n")
 

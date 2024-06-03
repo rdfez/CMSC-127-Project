@@ -115,19 +115,30 @@ def delete_estab(cur, id, text_widget):
     ''', (id,))
     result = cur.fetchone()
     if result:
+        text_widget.insert(tk.END, "\nAre you sure you want to delete:")
+        text_widget.insert(tk.END, format_item(result))
+        choice = simpledialog.askstring("Input", "Choice (Y/N):").upper()
+
+        if choice == 'Y':
         # Check if there are associated food items
-        cur.execute("SELECT * FROM food_item WHERE establishment_id = ?", (id,))
-        associated_items = cur.fetchall()
-        if associated_items:
-            # Display error message if there are associated items
-            text_widget.insert(tk.END, "Unable to delete establishment. It has associated food items.\n")
+            cur.execute("SELECT * FROM food_item WHERE establishment_id = ?", (id,))
+            associated_items = cur.fetchall()
+            if associated_items:
+                # Display error message if there are associated items
+                text_widget.insert(tk.END, "Unable to delete establishment. It has associated food items.\n")
+            else:
+                # No associated items, proceed with deletion
+                cur.execute('''
+                    DELETE FROM food_establishment WHERE establishment_id = ?
+                ''', (id,))
+                text_widget.insert(tk.END, format_item(result)+"\n")
+                text_widget.insert(tk.END, "Establishment deleted successfully.\n")
+        elif choice == 'N':
+                text_widget.insert(tk.END, "\nEstablishment deletion unsuccesful.\n")
         else:
-            # No associated items, proceed with deletion
-            cur.execute('''
-                DELETE FROM food_establishment WHERE establishment_id = ?
-            ''', (id,))
-            text_widget.insert(tk.END, format_item(result)+"\n")
-            text_widget.insert(tk.END, "Establishment deleted successfully.\n")
+            text_widget.insert(tk.END, "\nOption not Allowed.\n")
+
+
     else:
         text_widget.insert(tk.END, "Establishment not found.\n")
 
